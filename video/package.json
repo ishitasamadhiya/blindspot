@@ -1,0 +1,22 @@
+{
+  "name": "@blindspot/video",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts Demo out/blindspot-demo.mp4 --codec=h264 --crf=16",
+    "render:silent": "remotion render src/index.ts DemoSilent out/blindspot-demo-silent.mp4 --codec=h264 --crf=16",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@blindspot/web": "*",
+    "@remotion/cli": "4.0.533",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "remotion": "4.0.533"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4"
+  }
+}

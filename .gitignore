@@ -1,0 +1,13 @@
+node_modules/
+dist/
+out/
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example
+data/*.sqlite
+data/*.sqlite-*
+video/out/
+video/public/audio/*.m4a
+video/public/audio/*.aiff
