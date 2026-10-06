@@ -297,11 +297,15 @@ and `npm run story`, so the release gate's exit code is what makes the build gre
 ## Testing
 
 ```bash
-npm test          # core: 21 vitest cases
+npm test          # core: 21 vitest cases · server: API flow + durable-runner resume
 npm run typecheck # core, server, web
 ```
 
-Covered: seeded RNG reproducibility; bootstrap interval behaviour (brackets the mean, zero for
+Server tests drive the whole loop through the REST API in memory (replay → coverage → harvest →
+grade → commit → eval → gate, including the Foundry export shape and malformed-ingest rejection)
+and prove the job runner resumes at a failed step and never re-runs a finished one.
+
+Core tests cover: seeded RNG reproducibility; bootstrap interval behaviour (brackets the mean, zero for
 identical runs, includes zero for two-sided flips); Cohen's κ; embedder determinism and structure
 sensitivity; threshold calibration and coverage of the golden set against itself; clustering of
 separated blobs and determinism; cluster naming; representative selection roles and budget; the
