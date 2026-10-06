@@ -29,10 +29,11 @@ export const AgreementMeters: React.FC<{ rows: AgreementRow[]; judgeName?: strin
             · {r.graded}/{r.graded + r.pending} graded
           </span>
         </span>
-        <span>
-          <div className="progress" title={r.agreement === null ? "no graded cases yet" : `${pct(r.agreement)} agreement`}>
+        <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div className="progress" style={{ flex: 1 }} role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round((r.agreement ?? 0) * 100)} aria-label={`judge agreement for ${r.cluster_id}`}>
             <div style={{ width: `${(r.agreement ?? 0) * 100}%`, background: (r.agreement ?? 0) >= 0.8 ? "var(--success)" : "var(--danger)" }} />
           </div>
+          <span className="num small" style={{ minWidth: 34, textAlign: "right" }}>{r.agreement === null ? "–" : pct(r.agreement, 0)}</span>
         </span>
         <span className="num">{r.kappa === null || Number.isNaN(r.kappa) ? "–" : r.kappa.toFixed(2)}</span>
         <span className="num muted">{r.mean_judge_confidence === null ? "–" : r.mean_judge_confidence.toFixed(2)}</span>

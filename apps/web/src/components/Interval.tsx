@@ -7,7 +7,7 @@ export const IntervalBar: React.FC<{ interval: IntervalT; min: number; max: numb
   const fmt = format === "pct" ? pct : pts;
   return (
     <div>
-      <div className={`interval ${tone === "accent" ? "" : tone}`} aria-label={`${fmt(interval.estimate)} with interval ${fmt(interval.lo)} to ${fmt(interval.hi)}`}>
+      <div className={`interval ${tone === "accent" ? "" : tone}`} role="img" aria-label={`${fmt(interval.estimate)} with 95% interval ${fmt(interval.lo)} to ${fmt(interval.hi)}`}>
         {zero ? <div className="zero" style={{ left: pos(0) }} /> : null}
         <div className="range" style={{ left: pos(interval.lo), width: `calc(${pos(interval.hi)} - ${pos(interval.lo)})` }} />
         <div className="point" style={{ left: pos(interval.estimate) }} />

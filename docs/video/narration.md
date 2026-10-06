@@ -8,7 +8,7 @@ clips in `video/public/audio/` (same file names) and re-running the render.
 
 | # | Scene | Narration |
 |---|---|---|
-| 1 | hook | This claim was approved for the wrong amount. This eval says ninety-four percent, green. Both are true. If I joined Team Delta tomorrow, this is the first thing I'd fix. |
+| 1 | hook | This claim was approved for the wrong amount. This eval says ninety-four percent, green. Both are true. If I joined Team Delta tomorrow, this is the first thing I'd want to fix. |
 | 2 | works | What already works: a golden set, expert-graded, replayed on every release. CI for agents. |
 | 3 | signal | Three weeks in, Contoso's analysts override one decision in four. The eval never moved. |
 | 4 | hypothesis | So, a different question: how much of this week's traffic has the eval actually seen? |
@@ -20,10 +20,10 @@ clips in `video/public/audio/` (same file names) and re-running the render.
 | 10 | before | Before: green dashboard, unhappy customer. |
 | 11 | harvest | After: thirty cases graded. Golden set v2. |
 | 12 | blocked | Release one-three on v2: eighty-seven point seven, zero on the portal cluster. Blocked, with the reason named. |
-| 13 | fixed | A ten-line parser patch. Release one-four: ninety-three point seven, plus six points, coverage ninety. Pass. |
+| 13 | fixed | A fourteen-line parser patch. Release one-four: ninety-three point seven, plus six points, coverage above ninety. Pass. |
 | 14 | control | A control: the next release moves one point, the interval includes zero, the gate stays green. |
 | 15 | whyme | I'm Ishita, EECS and Business at Berkeley M.E.T. I like finding messy product problems, figuring out what matters, and building the system that fixes them. |
-| 16 | proof | MIT CSAIL: evaluation design for RAG in production. FrontDesk: a customer problem, shipped and iterated. Valency: benchmarking on bootstrap intervals. Holographic Studio: a loved idea plus its missing layer. |
+| 16 | proof | MIT CSAIL: evaluation design for RAG in production. FrontDesk: a customer problem taken from interviews to a shipped pipeline. Valency: benchmarking on bootstrap intervals. Holographic Studio: an idea that already worked, plus its missing layer. |
 | 17 | close | We don't ship agents we can't measure. Blindspot keeps the measurement about this week. I'd love to build the next one with Team Delta. |
 
 ## Timing plan (visual minimums, seconds)

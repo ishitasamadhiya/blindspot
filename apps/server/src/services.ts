@@ -96,7 +96,7 @@ const ENGAGEMENT = {
   customer: "Contoso Foods",
   agent: "Deduction-claim validator",
   description: "Validates retailer trade-promotion deduction claims (Northwind Traders, Fabrikam Grocers, Tailwind Markets) against Contoso's promo contracts and returns APPROVE / REJECT / ESCALATE with a reimbursable amount.",
-  deployed: "2026-09-08",
+  deployed: "2026-09-15",
   discovery_graders: ["analyst:m.okafor", "analyst:j.lindqvist"],
 };
 

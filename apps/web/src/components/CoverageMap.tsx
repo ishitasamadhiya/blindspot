@@ -54,7 +54,7 @@ export const CoverageMap: React.FC<{
   const uncoveredReveal = Math.min(1, Math.max(0, reveal * 3 - 2));
   return (
     <div className="map-wrap">
-      <svg className="map" viewBox={`0 0 ${width} ${height}`} width="100%" role="img" aria-label="Traffic map: golden set versus last seven days of production traffic" onClick={() => onSelect?.(null)}>
+      <svg className="map" viewBox={`0 0 ${width} ${height}`} width="100%" role="img" aria-label={`Traffic map: ${golden.length} golden cases, ${covered.length} covered traces, ${uncovered.length} uncovered traces in ${blindSpots.length} blind spots: ${blindSpots.map((b) => `${b.cluster_id} ${b.name} (${b.volume})`).join("; ")}. Select a blind spot from the ranked list.`} onClick={() => onSelect?.(null)}>
         <rect x={0} y={0} width={width} height={height} rx={8} fill="var(--surface-2)" stroke="var(--border)" />
         {goldenReveal > 0.5 && neighbourhood ? <path d={neighbourhood} fill="var(--golden)" fillOpacity={0.07 * Math.min(1, (goldenReveal - 0.5) * 2)} stroke="var(--golden)" strokeOpacity={0.5} strokeDasharray="5 4" strokeWidth={1.2} /> : null}
         {take(golden, goldenReveal).map((p) => (

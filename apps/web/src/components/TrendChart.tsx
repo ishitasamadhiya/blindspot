@@ -32,7 +32,7 @@ export const TrendChart: React.FC<{
   const ticks = [0, max / 2, max];
   return (
     <div className="map-wrap">
-      <svg viewBox={`0 0 ${w} ${h}`} width="100%" role="img" aria-label="trend chart" onMouseLeave={() => setHover(null)}>
+      <svg viewBox={`0 0 ${w} ${h}`} width="100%" role="img" aria-label={`${series.map((s) => `${s.label}: ${yFormat(s.values[0] ?? 0)} on ${labels[0] ?? ""} to ${yFormat(s.values[s.values.length - 1] ?? 0)} on ${labels[labels.length - 1] ?? ""}`).join("; ")}`} onMouseLeave={() => setHover(null)}>
         {ticks.map((t) => (
           <g key={t}>
             <line x1={padL} x2={w - padR} y1={y(t)} y2={y(t)} stroke="var(--border)" />

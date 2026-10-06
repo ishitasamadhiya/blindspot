@@ -30,7 +30,7 @@ export const Before: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds,
           <StatTile label="Coverage · last 7 days vs golden v1" value={pct(snap.coverage_v1.coverage)} sub={`${snap.coverage_v1.covered} of ${snap.coverage_v1.total} traces within the golden set's neighbourhood`} tone="bad" />
         </div>
         <div style={{ zoom: 1.6 }}>
-          <StatTile label="Analyst override rate · last 7 days" value={pct(over)} sub="was 4.2% in the first week" tone="bad" />
+          <StatTile label="Analyst override rate · last 7 days" value={pct(over)} sub="was 4.2% the week before the migration" tone="bad" />
         </div>
       </Fade>
       <div style={{ position: "absolute", left: 96, top: 620 }}>
@@ -80,7 +80,7 @@ export const Harvest: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds
             <VersionTimeline versions={snap.golden_versions} current="v2" />
           </div>
           <div style={{ fontSize: 14, color: "var(--text-2)" }}>
-            {v2.case_ids.length} cases · sha256 {v2.sha256.slice(0, 14)}… · exported as a Foundry evaluation dataset
+            {v2.case_ids.length} cases · sha-256 {v2.sha256.slice(0, 14)}… · exported as a Foundry evaluation dataset
           </div>
         </Window>
       </Fade>
@@ -122,7 +122,7 @@ export const Blocked: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds
         </Window>
       </Fade>
       <Caption start={4.2}>
-        Blocked, with the reason named: <b>0% on the portal-v2 cluster</b>. The 94% was about last month.
+        Blocked, with the reason named: <b>0% on the portal-v2 cluster</b>. The 94% was about August.
       </Caption>
     </Scene>
   );
@@ -138,7 +138,7 @@ export const Fixed: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds, 
     <Scene seconds={seconds}>
       <div className="lower">
         <Eyebrow start={0.1}>Fix · release/1.4</Eyebrow>
-        <Kinetic text="A ten-line parser patch." start={0.2} size={48} />
+        <Kinetic text="A fourteen-line parser patch." start={0.2} size={48} />
       </div>
       <Fade start={0.4} style={{ position: "absolute", left: 96, top: 230, width: 860 }}>
         <div style={{ fontSize: 17 }}>
@@ -205,7 +205,7 @@ export const Control: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds
         </Window>
       </Fade>
       <Caption start={4.0}>
-        <b>No crying wolf.</b> A point estimate would have paged someone. An interval did not.
+        <b>No crying wolf.</b> A bare point estimate reads as a drop. The interval says it is noise.
       </Caption>
     </Scene>
   );
@@ -226,12 +226,12 @@ export const WhyMe: React.FC<{ seconds: number }> = ({ seconds }) => (
 );
 
 const PROOF: Array<{ where: string; what: string; pinned: string }> = [
-  { where: "MIT CSAIL", what: "owned retrieval + evaluation design for RAG across 12 health domains in production", pinned: "coverage and failure signals are the metrics I already ship" },
-  { where: "FrontDesk", what: "customer interviews → a technical design through eng, design and CEO review → shipped product lines → iteration", pinned: "the trace → internal tool → gate shape" },
+  { where: "MIT CSAIL", what: "owned retrieval + evaluation design for RAG across 12 health domains in production", pinned: "evaluation design and monitoring are things I already own" },
+  { where: "FrontDesk", what: "customer interviews → a technical design through eng, design and CEO review → a shipped lead pipeline on durable workflows → iteration", pinned: "the trace → internal tool → gate shape" },
   { where: "Valency", what: "a 25-experiment benchmarking program with paired-bootstrap CIs and LLM-as-judge", pinned: "the interval on the score is my code" },
-  { where: "Holographic Studio", what: "gesture-controlled music people already loved + the layer that made it a real studio", pinned: "existing idea → missing layer" },
+  { where: "Holographic Studio", what: "gesture-controlled music, an idea that already worked + the layer that made it a recording studio", pinned: "existing idea → missing layer" },
   { where: "Founder", what: "Skinsnap, zero to 10,000+ users, acquired", pinned: "what “the customer says it's broken” costs" },
-  { where: "Microsoft Delta", what: "next", pinned: "" },
+  { where: "Microsoft Delta", what: "where I would like to build the next one", pinned: "" },
 ];
 
 export const Proof: React.FC<{ seconds: number }> = ({ seconds }) => (

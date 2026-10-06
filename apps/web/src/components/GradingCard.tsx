@@ -35,15 +35,20 @@ export const GradingCard: React.FC<{
   }, [item.item_id, prefill]);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement | null)?.tagName === "INPUT" || (e.target as HTMLElement | null)?.tagName === "TEXTAREA") return;
+      if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
       if (e.key === "a") setDecision("APPROVE");
       if (e.key === "r") setDecision("REJECT");
       if (e.key === "e") setDecision("ESCALATE");
-      if (e.key === "Enter" && decision && onGrade) void onGrade({ decision, amount: decision === "APPROVE" ? Number(amount) || 0 : 0, note });
+      if (e.key === "Enter" && tag !== "BUTTON" && tag !== "A" && decision && onGrade && !busy && item.status !== "graded") {
+        e.preventDefault();
+        void onGrade({ decision, amount: decision === "APPROVE" ? Number(amount) || 0 : 0, note });
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [decision, amount, note, onGrade]);
+  }, [decision, amount, note, onGrade, busy, item.status]);
   const t = item.trace;
   if (!t) return <div className="empty">trace missing</div>;
   const isSim = item.judge?.judge.startsWith("simulated");
@@ -61,7 +66,7 @@ export const GradingCard: React.FC<{
           </div>
           <span className={`badge ${item.status === "graded" ? "pass" : "neutral"}`}>{item.status}</span>
         </div>
-        <ClaimJson claim={t.claim} highlight={highlight} maxHeight={380} />
+        <ClaimJson claim={t.claim} highlight={highlight} maxHeight={380} focusable />
         <div className="section">
           <div className="small muted" style={{ marginBottom: 6 }}>
             Agent {t.agent_version} returned
@@ -97,9 +102,38 @@ export const GradingCard: React.FC<{
           <div className="small muted" style={{ marginBottom: 6 }}>
             Your decision <span className="faint">(keys: a / r / e, Enter to submit)</span>
           </div>
-          <div className="decision-row" role="radiogroup" aria-label="expert decision">
-            {(["APPROVE", "REJECT", "ESCALATE"] as Decision[]).map((d) => (
-              <button key={d} type="button" role="radio" aria-checked={decision === d} className={`btn ${decision === d ? `selected ${d.toLowerCase()}` : ""}`} onClick={() => setDecision(d)}>
+          <div
+            className="decision-row"
+            role="radiogroup"
+            aria-label="expert decision"
+            onKeyDown={(e) => {
+              const order: Decision[] = ["APPROVE", "REJECT", "ESCALATE"];
+              const i = Math.max(0, order.indexOf(decision ?? "APPROVE"));
+              if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+                e.preventDefault();
+                const next = order[(i + 1) % order.length] as Decision;
+                setDecision(next);
+                (e.currentTarget.querySelector(`[data-decision="${next}"]`) as HTMLButtonElement | null)?.focus();
+              }
+              if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+                e.preventDefault();
+                const prev = order[(i - 1 + order.length) % order.length] as Decision;
+                setDecision(prev);
+                (e.currentTarget.querySelector(`[data-decision="${prev}"]`) as HTMLButtonElement | null)?.focus();
+              }
+            }}
+          >
+            {(["APPROVE", "REJECT", "ESCALATE"] as Decision[]).map((d, i) => (
+              <button
+                key={d}
+                type="button"
+                role="radio"
+                data-decision={d}
+                aria-checked={decision === d}
+                tabIndex={decision === d || (!decision && i === 0) ? 0 : -1}
+                className={`btn ${decision === d ? `selected ${d.toLowerCase()}` : ""}`}
+                onClick={() => setDecision(d)}
+              >
                 {d}
               </button>
             ))}

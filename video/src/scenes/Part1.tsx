@@ -51,7 +51,7 @@ export const Hook: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds, s
         <Kinetic text="Both are true." start={5.5} size={76} align="center" />
       </div>
       <Caption start={7.0}>
-        If I joined <b>Team Delta</b> tomorrow, this is the first thing I'd fix.
+        If I joined <b>Team Delta</b> tomorrow, this is the first thing I'd want to fix.
       </Caption>
     </Scene>
   );
@@ -160,7 +160,7 @@ export const Hypothesis: React.FC<{ seconds: number }> = ({ seconds }) => {
         </div>
       </div>
       <Caption start={3.4}>
-        The golden set was built in <b>August</b>. The traffic changed in <b>October</b>.
+        The golden set was built in <b>August</b>. The traffic changed at the <b>end of September</b>.
       </Caption>
     </Scene>
   );

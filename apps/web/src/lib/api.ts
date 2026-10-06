@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? "";
+export const API_BASE = BASE;
 
 export async function api<T>(path: string, init?: RequestInit & { json?: unknown }): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
@@ -87,10 +88,20 @@ export function useApi<T>(path: string | null, refreshOn: string[] = []): { data
   const [loading, setLoading] = useState(!!path);
   const [tick, setTick] = useState(0);
   const reload = useCallback(() => setTick((t) => t + 1), []);
+  const lastPath = useRef<string | null>(null);
   useEffect(() => {
-    if (!path) return;
+    if (!path) {
+      setData(null);
+      setLoading(false);
+      lastPath.current = null;
+      return;
+    }
     let alive = true;
     setLoading(true);
+    if (lastPath.current !== path) {
+      setData(null);
+      lastPath.current = path;
+    }
     api<T>(path)
       .then((d) => {
         if (alive) {

@@ -8,7 +8,7 @@ export const VersionTimeline: React.FC<{ versions: GoldenVersion[]; current: str
       .slice()
       .reverse()
       .map((v, i, arr) => (
-        <div key={v.version} className={`tl-item ${v.version === current ? "current" : ""}`} style={{ cursor: onSelect ? "pointer" : "default" }} onClick={() => onSelect?.(v.version)}>
+        <div key={v.version} className={`tl-item ${v.version === current ? "current" : ""}`} style={{ cursor: onSelect ? "pointer" : "default" }} onClick={() => onSelect?.(v.version)} {...(onSelect ? { tabIndex: 0, role: "button", "aria-pressed": selected === v.version, onKeyDown: (e: React.KeyboardEvent) => (e.key === "Enter" || e.key === " " ? (e.preventDefault(), onSelect(v.version)) : undefined) } : {})}>
           <div className="rail">
             <div className="node" />
             {i < arr.length - 1 ? <div className="line" /> : null}

@@ -13,15 +13,18 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const push = useCallback((text: string, tone: Toast["tone"] = "info") => {
     const id = Date.now() + Math.random();
     setToasts((t) => [...t, { id, text, tone }]);
-    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 4200);
+    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), tone === "bad" ? 12000 : 4200);
   }, []);
   return (
     <Ctx.Provider value={push}>
       {children}
-      <div className="toasts" aria-live="polite">
+      <div className="toasts">
         {toasts.map((t) => (
-          <div key={t.id} className={`toast ${t.tone}`}>
-            {t.text}
+          <div key={t.id} className={`toast ${t.tone}`} role={t.tone === "bad" ? "alert" : "status"}>
+            <span>{t.text}</span>
+            <button type="button" aria-label="dismiss" onClick={() => setToasts((all) => all.filter((x) => x.id !== t.id))}>
+              ×
+            </button>
           </div>
         ))}
       </div>

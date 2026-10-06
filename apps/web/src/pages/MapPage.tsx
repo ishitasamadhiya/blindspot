@@ -57,7 +57,7 @@ export const MapPage: React.FC<{ go: (r: "grading") => void }> = ({ go }) => {
         <div>
           <h1>Where is the traffic the eval has never seen?</h1>
           <p>
-            {n(data.total)} traces from {day(data.window_start)} to {day(data.window_end)} against golden <b>{data.golden_version}</b>. A trace is covered when its nearest golden case is at least as close as 95% of the golden set is to itself (cosine ≥ {data.threshold.toFixed(3)}, calibrated on a held-out slice). <b className={data.coverage < 0.85 ? "" : ""} style={{ color: data.coverage < 0.85 ? "var(--danger)" : "var(--success)" }}>{pct(data.coverage)} covered.</b>
+            {n(data.total)} traces from {day(data.window_start)} to {day(data.window_end)} against golden <b>{data.golden_version}</b>. A trace is covered when its nearest golden case is at least as close as 95% of the golden set is to itself (cosine ≥ {data.threshold.toFixed(3)}, calibrated on a held-out slice). <b style={{ color: data.coverage < 0.85 ? "var(--danger)" : "var(--success)" }}>{pct(data.coverage)} covered{data.coverage < 0.85 ? ", below the 85% gate" : ""}.</b>
           </p>
         </div>
         <div className="actions">
@@ -82,12 +82,13 @@ export const MapPage: React.FC<{ go: (r: "grading") => void }> = ({ go }) => {
               key={b.cluster_id}
               type="button"
               className="card"
-              style={{ textAlign: "left", cursor: "pointer", padding: "10px 12px", borderColor: detail?.cluster_id === b.cluster_id ? clusterColor(b.cluster_id) : undefined, boxShadow: detail?.cluster_id === b.cluster_id ? `0 0 0 1px ${clusterColor(b.cluster_id)}` : undefined }}
+              style={{ textAlign: "left", cursor: "pointer", padding: "10px 12px", borderColor: detail?.cluster_id === b.cluster_id ? clusterColor(b.cluster_id) : undefined, boxShadow: detail?.cluster_id === b.cluster_id ? `0 0 0 1px ${clusterColor(b.cluster_id)}` : undefined, display: "block", width: "100%" }}
               onClick={() => setSelected(b.cluster_id)}
               aria-pressed={detail?.cluster_id === b.cluster_id}
+              aria-label={`${b.cluster_id} ${b.name}: ${b.volume} traces, ${pct(b.failure_rate, 0)} failing, novelty ${b.novelty.toFixed(2)}, score ${b.score.toFixed(3)}`}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span className="dot" style={{ background: clusterColor(b.cluster_id) }} />
+              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span className="dot" style={{ background: clusterColor(b.cluster_id) }} aria-hidden="true" />
                 <b>{b.cluster_id}</b>
                 <span className="mono small" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {b.name}
@@ -95,13 +96,13 @@ export const MapPage: React.FC<{ go: (r: "grading") => void }> = ({ go }) => {
                 <span className="faint small" style={{ marginLeft: "auto" }}>
                   #{i + 1}
                 </span>
-              </div>
-              <div className="small muted num" style={{ marginTop: 6, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+              </span>
+              <span className="small muted num" style={{ marginTop: 6, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
                 <span>
                   <b style={{ color: "var(--text)" }}>{b.volume}</b> traces
                 </span>
                 <span>
-                  <b style={{ color: b.failure_rate > 0.3 ? "var(--danger)" : "var(--text)" }}>{pct(b.failure_rate, 0)}</b> failing
+                  <b style={{ color: b.failure_rate > 0.3 ? "var(--danger)" : "var(--text)" }}>{pct(b.failure_rate, 0)}</b> failing{b.failure_rate > 0.3 ? " (high)" : ""}
                 </span>
                 <span>
                   <b style={{ color: "var(--text)" }}>{b.novelty.toFixed(2)}</b> novelty
@@ -109,8 +110,8 @@ export const MapPage: React.FC<{ go: (r: "grading") => void }> = ({ go }) => {
                 <span>
                   <b style={{ color: "var(--text)" }}>{b.score.toFixed(3)}</b> score
                 </span>
-              </div>
-              <div className="small faint" style={{ marginTop: 4 }}>
+              </span>
+              <span className="small faint" style={{ marginTop: 4, display: "block" }}>
                 {Object.entries(b.retailers)
                   .map(([r, c]) => `${r} ${c}`)
                   .join(" · ")}
@@ -118,7 +119,7 @@ export const MapPage: React.FC<{ go: (r: "grading") => void }> = ({ go }) => {
                 {money(b.value_at_risk)} claimed
                 {data.analysis.selections[b.cluster_id] ? ` · ${data.analysis.selections[b.cluster_id]?.ids.length} picked for grading` : " · below the harvest cut"}
                 {queued.has(b.cluster_id) ? " · in queue" : ""}
-              </div>
+              </span>
             </button>
           ))}
           {data.analysis.long_tail && data.analysis.long_tail.traces > 0 ? (

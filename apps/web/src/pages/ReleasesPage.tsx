@@ -182,7 +182,7 @@ export const ReleasesPage: React.FC = () => {
               </thead>
               <tbody>
                 {(runs.data ?? []).map((r) => (
-                  <tr key={r.run_id} className={`clickable ${run?.run_id === r.run_id ? "selected" : ""}`} onClick={() => setSelected(r.run_id)}>
+                  <tr key={r.run_id} className={`clickable ${run?.run_id === r.run_id ? "selected" : ""}`} tabIndex={0} role="button" aria-pressed={run?.run_id === r.run_id} onClick={() => setSelected(r.run_id)} onKeyDown={(e) => (e.key === "Enter" || e.key === " " ? (e.preventDefault(), setSelected(r.run_id)) : undefined)}>
                     <td>
                       <b>{r.release_tag}</b>
                       <div className="small faint">{dateTime(r.created_at)}</div>

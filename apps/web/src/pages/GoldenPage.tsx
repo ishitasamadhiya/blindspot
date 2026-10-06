@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import type { GoldenCase, GoldenVersion } from "@blindspot/core";
-import { useApi } from "../lib/api";
+import { API_BASE, useApi } from "../lib/api";
 import { VersionTimeline } from "../components/VersionTimeline";
 import { ClaimJson } from "../components/ClaimJson";
 import { clusterColor } from "../components/CoverageMap";
@@ -27,7 +27,7 @@ export const GoldenPage: React.FC<{ go: (r: "releases") => void }> = ({ go }) =>
           <p>Every version is immutable and content-addressed. Harvested cases carry the blind spot they came from, so the eval can report pass rates per blind spot and the gate can block on them.</p>
         </div>
         <div className="actions">
-          <a className="btn" href={`/api/golden/${view}/export.jsonl`} download>
+          <a className="btn" href={`${API_BASE}/api/golden/${view}/export.jsonl`} download>
             Export {view} as Foundry dataset (JSONL)
           </a>
           <button className="btn primary" onClick={() => go("releases")}>

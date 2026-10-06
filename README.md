@@ -50,17 +50,17 @@ Fabrikam Grocers, Tailwind Markets) short-pay invoices and submit trade-promotio
 claims. An agent validates each claim against Contoso's promo contracts and returns
 APPROVE / REJECT / ESCALATE with a reimbursable amount. It was built in August from a golden set
 of 400 historical claims graded by two deductions analysts, scored 94.0% on them, and was deployed
-into Contoso's tenant in September.
+into Contoso's tenant in mid-September.
 
 Three weeks later:
 
-| | first week | last 7 days |
+| | week before the migration (Sep 23–29) | last 7 days (Sep 30–Oct 6) |
 |---|---|---|
 | eval accuracy on golden v1 | 94.0% | 94.0% |
 | analyst override rate in production | 4.2% | 25.3% |
 | coverage of traffic by golden v1 | 91.1% | **53.8%** |
 
-Both numbers in the first column are true at the same time. Northwind migrated to a new portal
+Both numbers in the last column are true at the same time. Northwind migrated to a new portal
 whose export nests the deduction amount inside `line_items[]`; the parser finds no amount,
 defaults it to zero, and *approves the claim for $0.00*. A scan-back promo type that did not
 exist in any August contract is rejected every time. Fabrikam's co-op advertising claims arrive
@@ -77,7 +77,7 @@ interactions. Those are the ingredients. Blindspot does not replace them.
 
 ## The missing layer
 
-What none of the existing tools compute:
+What the existing tools do not surface as first-class numbers:
 
 1. **A coverage number.** What fraction of this week's traffic sits within the golden set's own
    neighbourhood. A score should come with "...and this is about 54% of what the agent sees."
@@ -87,8 +87,8 @@ What none of the existing tools compute:
 3. **Judge agreement per blind spot.** How much of the eval can run unattended, and where it cannot.
 4. **Intervals on release deltas.** A paired bootstrap over the same cases, so a two-point move is
    not mistaken for a regression (or an improvement).
-5. **A release gate on representativeness**, exported in Foundry's dataset schema so it plugs into
-   the platform the agent is deployed on.
+5. **A release gate on representativeness**, with golden versions exported in Foundry's dataset
+   schema so the gate complements Foundry evaluations instead of replacing them.
 
 ## The solution, in three moves
 
@@ -141,7 +141,7 @@ A release ships only if the eval it passed is about this week:
 ![Release gate: release/1.3 blocked on golden v2 with the failing blind spots named](docs/screenshots/releases.png)
 
 On the demo data: release/1.3 re-run on golden v2 scores 87.7% [84.4, 90.7] with 0%, 0% and 10% on
-the three blind spots and is **blocked**. A ten-line parser patch (release/1.4) scores 93.7%
+the three blind spots and is **blocked**. A fourteen-line parser patch (release/1.4) scores 93.7%
 [91.4, 95.8], +6.0 pts [4.0, 8.4] paired against 1.3, coverage 90.6%, and **passes**. A control
 release that moves the number by −0.9 pts [−2.8, +0.9] also passes: the interval includes zero, so
 the gate does not cry wolf. `npm run gate` prints the checks and exits non-zero when blocked.
@@ -239,7 +239,7 @@ changing the step bodies.
 | Paired bootstrap (10k resamples, fixed seed) on release deltas | the same cases are scored by both releases; pairing removes case difficulty from the variance | 10k resamples over 430 cases is ~1 s in JS; fine for a gate, would move to a worker at scale |
 | Gate on coverage *and* per-blind-spot pass rate *and* regression interval | each catches a failure the others miss: a stale set, a known-bad region, and random noise | more things to explain; the checks list is the explanation |
 | Node's built-in `node:sqlite` | no native build step, so `npm install` works everywhere; real SQL for jobs and versions | marked experimental in Node 22; the data layer is one file if it needs to move |
-| Immutable, content-addressed golden versions exported as Foundry JSONL | reproducible evals and a path into the platform Delta deploys on | the export is the standard query/response/ground_truth/context shape; Blindspot's cluster metadata rides in `context` |
+| Immutable, content-addressed golden versions exported as Foundry JSONL | reproducible evals and a path into Foundry's own evaluation flow | the export is the standard query/response/ground_truth/context shape; Blindspot's cluster metadata rides in `context` |
 
 ## The math, briefly
 
@@ -337,7 +337,7 @@ rerun `tts.sh` with the files in place), and render again.
 - **Dollar-weighted everything.** Weight coverage, pass rates and the gate by claim value at risk.
 - **Durable Functions / Temporal.** Lift the job runner onto a real workflow engine; the step contract
   is already activity-shaped.
-- **Per-engagement tenancy.** One deployment per customer tenant, as Delta ships; no cross-customer view.
+- **Per-engagement tenancy.** One deployment per customer tenant; no cross-customer view.
 - **Semantic embeddings offline.** `all-MiniLM-L6-v2` via ONNX behind the same `Embedder` interface.
 - **Drift over time.** Coverage as a time series with alerting when a seven-day window drops below the
   gate threshold, before anyone cuts a release.

@@ -17,6 +17,7 @@ export const SegmentBars: React.FC<{ segments: SegmentMetric[]; threshold?: numb
           </div>
           <div className="num" style={{ textAlign: "right", fontWeight: 600 }}>
             {pct(s.pass_rate, 0)}
+            {s.pass_rate < threshold ? <span className="sr-only"> below threshold</span> : null}
           </div>
         </div>
       ))}

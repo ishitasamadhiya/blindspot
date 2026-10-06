@@ -6,11 +6,12 @@
   --surface-2: #f3f4f6;
   --text: #1b1f24;
   --text-2: #5b6470;
-  --text-3: #8a93a0;
+  --text-3: #6b7480;
   --border: #e3e6ea;
   --border-strong: #cfd4da;
   --accent: #0f6cbd;
   --accent-2: #115ea3;
+  --accent-strong: #0f6cbd;
   --accent-soft: #e8f1fb;
   --success: #0e7a0d;
   --success-soft: #e6f4e6;
@@ -33,11 +34,12 @@
     --surface-2: #1c222b;
     --text: #e6e9ed;
     --text-2: #9aa4b1;
-    --text-3: #6d7784;
+    --text-3: #8b95a3;
     --border: #262d37;
     --border-strong: #343d49;
     --accent: #4f9ee8;
     --accent-2: #6fb2f0;
+    --accent-strong: #1a6cc7;
     --accent-soft: #13263a;
     --success: #4ccf4a;
     --success-soft: #11291a;
@@ -58,11 +60,12 @@
   --surface-2: #1c222b;
   --text: #e6e9ed;
   --text-2: #9aa4b1;
-  --text-3: #6d7784;
+  --text-3: #8b95a3;
   --border: #262d37;
   --border-strong: #343d49;
   --accent: #4f9ee8;
   --accent-2: #6fb2f0;
+  --accent-strong: #1a6cc7;
   --accent-soft: #13263a;
   --success: #4ccf4a;
   --success-soft: #11291a;
@@ -116,7 +119,7 @@ p { margin: 0; }
 .sidebar .engagement { margin-top: auto; padding: 12px 10px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-2); }
 .sidebar .engagement b { color: var(--text); display: block; }
 .main { padding: 26px 32px 60px; max-width: 1380px; width: 100%; min-width: 0; }
-.page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
 .page-head p { color: var(--text-2); margin-top: 4px; max-width: 760px; }
 .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
@@ -125,8 +128,9 @@ p { margin: 0; }
 .btn:hover { background: var(--surface-2); }
 .btn:active { transform: translateY(1px); }
 .btn:disabled { opacity: 0.55; cursor: default; }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-.btn.primary:hover { background: var(--accent-2); }
+.btn:focus-visible, .tbl tr.clickable:focus-visible, .tl-item:focus-visible, .json:focus-visible, .patch:focus-visible, .nav a:focus-visible, button.card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn.primary { background: var(--accent-strong); border-color: var(--accent-strong); color: #fff; }
+.btn.primary:hover { filter: brightness(1.1); }
 .btn.danger { color: var(--danger); border-color: var(--danger); }
 .btn.success { color: var(--success); border-color: var(--success); }
 .btn.sm { padding: 4px 10px; font-size: 12.5px; }
@@ -270,8 +274,9 @@ svg.map text { font-family: var(--font); }
 .tl-item.current .rail .node { background: var(--success); box-shadow: 0 0 0 2px var(--success); }
 
 /* toast */
-.toasts { position: fixed; right: 18px; bottom: 18px; display: flex; flex-direction: column; gap: 8px; z-index: 50; }
-.toast { background: var(--surface); border: 1px solid var(--border-strong); border-left: 3px solid var(--accent); box-shadow: var(--shadow-lg); padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; max-width: 360px; animation: rise 0.25s ease-out; }
+.toasts { position: fixed; right: 18px; bottom: 18px; left: 18px; display: flex; flex-direction: column; gap: 8px; z-index: 50; align-items: flex-end; }
+.toast { background: var(--surface); border: 1px solid var(--border-strong); border-left: 3px solid var(--accent); box-shadow: var(--shadow-lg); padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; max-width: min(360px, 100%); animation: rise 0.25s ease-out; display: flex; gap: 10px; align-items: flex-start; }
+.toast button { border: none; background: transparent; color: var(--text-2); cursor: pointer; padding: 0 2px; font-size: 14px; line-height: 1; }
 .toast.warn { border-left-color: var(--warning); }
 .toast.bad { border-left-color: var(--danger); }
 .toast.good { border-left-color: var(--success); }
@@ -283,3 +288,9 @@ svg.map text { font-family: var(--font); }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .empty { padding: 36px; text-align: center; color: var(--text-2); }
 .formula { font-family: var(--mono); font-size: 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 10px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner { animation: none; border-top-color: var(--accent); }
+  .toast { animation: none; }
+  .segbar .fill, .progress > div, .btn { transition: none; }
+}

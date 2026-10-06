@@ -39,11 +39,11 @@ export function topLevelDiff(a: object, b: object): { onlyA: string[]; onlyB: st
   return { onlyA: [...ka].filter((k) => !kb.has(k)), onlyB: [...kb].filter((k) => !ka.has(k)) };
 }
 
-export const ClaimJson: React.FC<{ claim: unknown; highlight?: string[]; good?: string[]; maxHeight?: number; style?: React.CSSProperties }> = ({ claim, highlight = [], good = [], maxHeight, style }) => {
+export const ClaimJson: React.FC<{ claim: unknown; highlight?: string[]; good?: string[]; maxHeight?: number; style?: React.CSSProperties; focusable?: boolean }> = ({ claim, highlight = [], good = [], maxHeight, style, focusable = false }) => {
   const out: React.ReactNode[] = [];
   render(claim, "", 0, new Set(highlight), new Set(good), out, "r");
   return (
-    <div className="json" style={{ maxHeight, ...style }}>
+    <div className="json" style={{ maxHeight, ...style }} {...(focusable ? { tabIndex: 0, role: "region", "aria-label": "claim JSON" } : {})}>
       {out}
     </div>
   );

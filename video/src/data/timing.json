@@ -1,9 +1,9 @@
 {
  "hook": {
   "index": 1,
-  "seconds": 8.98,
+  "seconds": 9.32,
   "file": "audio/hook.wav",
-  "text": "This claim was approved for the wrong amount. This eval says ninety-four percent, green. Both are true. If I joined Team Delta tomorrow, this is the first thing I'd fix."
+  "text": "This claim was approved for the wrong amount. This eval says ninety-four percent, green. Both are true. If I joined Team Delta tomorrow, this is the first thing I'd want to fix."
  },
  "works": {
   "index": 2,
@@ -73,9 +73,9 @@
  },
  "fixed": {
   "index": 13,
-  "seconds": 6.66,
+  "seconds": 6.99,
   "file": "audio/fixed.wav",
-  "text": "A ten-line parser patch. Release one-four: ninety-three point seven, plus six points, coverage ninety. Pass."
+  "text": "A fourteen-line parser patch. Release one-four: ninety-three point seven, plus six points, coverage above ninety. Pass."
  },
  "control": {
   "index": 14,
@@ -91,9 +91,9 @@
  },
  "proof": {
   "index": 16,
-  "seconds": 13.07,
+  "seconds": 14.93,
   "file": "audio/proof.wav",
-  "text": "MIT CSAIL: evaluation design for RAG in production. FrontDesk: a customer problem, shipped and iterated. Valency: benchmarking on bootstrap intervals. Holographic Studio: a loved idea plus its missing layer."
+  "text": "MIT CSAIL: evaluation design for RAG in production. FrontDesk: a customer problem taken from interviews to a shipped pipeline. Valency: benchmarking on bootstrap intervals. Holographic Studio: an idea that already worked, plus its missing layer."
  },
  "close": {
   "index": 17,

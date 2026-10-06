@@ -105,9 +105,18 @@ export const GradingPage: React.FC<{ go: (r: "golden" | "map") => void }> = ({ g
           <table className="tbl">
             <tbody>
               {items.map((i) => (
-                <tr key={i.item_id} className={`clickable ${current?.item_id === i.item_id ? "selected" : ""}`} onClick={() => setCursor(Math.max(0, pending.findIndex((p) => p.item_id === i.item_id)))}>
+                <tr
+                  key={i.item_id}
+                  className={`clickable ${current?.item_id === i.item_id ? "selected" : ""}`}
+                  tabIndex={0}
+                  role="button"
+                  aria-pressed={current?.item_id === i.item_id}
+                  onClick={() => setCursor(Math.max(0, pending.findIndex((p) => p.item_id === i.item_id)))}
+                  onKeyDown={(e) => (e.key === "Enter" || e.key === " " ? (e.preventDefault(), setCursor(Math.max(0, pending.findIndex((p) => p.item_id === i.item_id)))) : undefined)}
+                >
                   <td>
-                    <span className="dot" style={{ background: clusterColor(i.cluster_id), marginRight: 8 }} />
+                    <span className="dot" style={{ background: clusterColor(i.cluster_id), marginRight: 8 }} aria-hidden="true" />
+                    <span className="small muted" style={{ marginRight: 6 }}>{i.cluster_id}</span>
                     <span className="mono small">{i.trace_id}</span>
                   </td>
                   <td className="small muted">{i.role}</td>

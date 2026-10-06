@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bootstrapMeanCI, cohenKappa, mulberry32, pairedBootstrapCI } from "../src/index.js";
+import { bootstrapMeanCI, cohenKappa, mulberry32, pairedBootstrapCI, sha256 } from "../src/index.js";
 
 describe("seeded prng", () => {
   it("is reproducible", () => {
@@ -40,5 +40,13 @@ describe("cohen kappa", () => {
     const a = Array.from({ length: 1000 }, (_, i) => i % 2);
     const b = Array.from({ length: 1000 }, (_, i) => Math.floor(i / 2) % 2);
     expect(Math.abs(cohenKappa(a, b))).toBeLessThan(0.05);
+  });
+});
+
+describe("sha256", () => {
+  it("matches the standard test vectors", () => {
+    expect(sha256("")).toBe("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+    expect(sha256("abc")).toBe("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+    expect(sha256("a".repeat(1000))).toBe("41edece42d63e8d9bf515a9ba6932e1c20cbc9f5a5d134645adb5db1b9737ea3");
   });
 });

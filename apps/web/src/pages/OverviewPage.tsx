@@ -58,7 +58,7 @@ export const OverviewPage: React.FC<{ go: (r: "map" | "grading" | "golden" | "re
         <div className="actions">
           {data.traffic.replay.pending > 0 ? (
             <button className="btn" disabled={!!busy} onClick={() => run("replay", () => api("/api/demo/replay", { method: "POST", json: { seconds: 18 } }), `Replaying ${n(data.traffic.replay.pending)} traces over 18 seconds`)}>
-              {busy === "replay" ? <span className="spinner" /> : "▶"} Replay next 7 days of traffic
+              {busy === "replay" ? <span className="spinner" role="img" aria-label="starting" /> : <span aria-hidden="true">▶</span>} Replay next 7 days of traffic
             </button>
           ) : null}
           <button className="btn primary" disabled={!!busy} onClick={() => run("coverage", () => api("/api/coverage/run", { method: "POST", json: { window_days: 7 } }), "Coverage job started")}>
@@ -76,7 +76,7 @@ export const OverviewPage: React.FC<{ go: (r: "map" | "grading" | "golden" | "re
           tone={cov ? (cov.coverage >= 0.85 ? "good" : "bad") : "neutral"}
           hint="Share of recent production traffic that sits within the golden set's own neighbourhood (threshold calibrated on the golden set)."
         />
-        <StatTile label="Analyst override rate · last 7 days" value={pct(overrideRate)} sub={`was ${pct(baseOverride)} in the first week · ${n(sum("escalations"))} escalations · ${n(sum("zero_dollar_approvals"))} $0 approvals`} tone={overrideRate > baseOverride * 1.5 ? "bad" : "good"} />
+        <StatTile label="Analyst override rate · last 7 days" value={pct(overrideRate)} sub={`was ${pct(baseOverride)} in the first week of data · ${n(sum("escalations"))} escalations · ${n(sum("zero_dollar_approvals"))} $0 approvals`} tone={overrideRate > baseOverride * 1.5 ? "bad" : "good"} />
         <StatTile label="Claim value in uncovered traffic" value={cov ? money(cov.value_at_risk_total) : "–"} sub="synthetic amounts, summed from seeded claims" tone={cov && cov.value_at_risk_total > 0 ? "warn" : "neutral"} />
       </div>
 
@@ -127,7 +127,7 @@ export const OverviewPage: React.FC<{ go: (r: "map" | "grading" | "golden" | "re
               </thead>
               <tbody>
                 {cov.blind_spots.slice(0, 4).map((b) => (
-                  <tr key={b.cluster_id} className="clickable" onClick={() => go("map")}>
+                  <tr key={b.cluster_id} className="clickable" tabIndex={0} role="button" onClick={() => go("map")} onKeyDown={(e) => (e.key === "Enter" || e.key === " " ? (e.preventDefault(), go("map")) : undefined)}>
                     <td>
                       <b>{b.cluster_id}</b> <span className="muted">{b.name}</span>
                     </td>

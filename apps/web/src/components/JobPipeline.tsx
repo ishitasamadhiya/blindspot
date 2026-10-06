@@ -29,11 +29,11 @@ export const JobPipeline: React.FC<{ job: JobView; compact?: boolean }> = ({ job
         <span className={`badge ${job.status === "complete" ? "pass" : job.status === "failed" ? "blocked" : "accent"}`}>{job.status}</span>
       </div>
     ) : null}
-    <div className="pipeline">
+    <div className="pipeline" role="list" aria-live="polite" aria-label={`job steps for ${job.label}`}>
       {job.steps.map((s, i) => (
-        <div key={i} className={`step ${s.status}`}>
+        <div key={i} className={`step ${s.status}`} role="listitem">
           <div className="name">
-            {s.status === "running" ? <span className="spinner" /> : s.status === "done" ? "✓" : s.status === "failed" ? "✗" : `${i + 1}`}
+            {s.status === "running" ? <span className="spinner" role="img" aria-label="running" /> : s.status === "done" ? "✓" : s.status === "failed" ? "✗" : `${i + 1}`}
             {s.name}
           </div>
           {!compact ? <div className="note">{s.note ?? ""}</div> : null}
