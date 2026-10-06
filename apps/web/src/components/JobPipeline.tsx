@@ -21,7 +21,7 @@ export const JobPipeline: React.FC<{ job: JobView; compact?: boolean }> = ({ job
       <div className="card-head" style={{ marginBottom: 8 }}>
         <div>
           <b>{job.label}</b>
-          <div className="small faint">
+          <div className="small faint" role="status" aria-live="polite">
             durable job {job.job_id} · {job.status}
             {job.error ? ` · ${job.error}` : ""}
           </div>

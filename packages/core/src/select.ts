@@ -43,7 +43,7 @@ export function selectRepresentatives(
   const rng = mulberry32(opts.seed ?? 5);
   const roles: Selection["roles"] = {};
   const chosen = new Set<number>();
-  if (candidates.length === 0) return { ids: [], roles };
+  if (candidates.length === 0 || !(budget >= 1)) return { ids: [], roles };
 
   const m = medoidIndex(candidates.map((c) => c.vec));
   chosen.add(m);

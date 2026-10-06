@@ -27,6 +27,13 @@ export interface JobRecord<I = unknown, R = unknown> {
   updated_at: string;
 }
 
+/** Wire/API view of a job: everything except the checkpoint, which can hold megabytes of vectors. */
+export type JobView = Omit<JobRecord, "checkpoint">;
+export function toJobView(job: JobRecord): JobView {
+  const { checkpoint: _c, ...view } = job;
+  return view;
+}
+
 export interface StepContext {
   checkpoint: Record<string, unknown>;
   note: (text: string) => void;
@@ -62,11 +69,16 @@ export class JobRunner {
     this.defs.set(def.type, def as JobDefinition<unknown>);
   }
 
-  list(): JobRecord[] {
-    return (this.db.prepare("SELECT * FROM jobs ORDER BY created_at DESC LIMIT 50").all() as Array<Record<string, unknown>>).map(rowToJob);
+  list(): JobView[] {
+    return (this.db.prepare("SELECT job_id,type,status,label,steps,input,result,error,attempts,created_at,updated_at FROM jobs ORDER BY created_at DESC LIMIT 50").all() as Array<Record<string, unknown>>).map((r) => toJobView(rowToJob({ ...r, checkpoint: "{}" })));
   }
 
-  get(jobId: string): JobRecord | undefined {
+  get(jobId: string): JobView | undefined {
+    const job = this.load(jobId);
+    return job ? toJobView(job) : undefined;
+  }
+
+  private load(jobId: string): JobRecord | undefined {
     const row = this.db.prepare("SELECT * FROM jobs WHERE job_id = ?").get(jobId) as Record<string, unknown> | undefined;
     return row ? rowToJob(row) : undefined;
   }
@@ -89,15 +101,21 @@ export class JobRunner {
       updated_at: nowIso(),
     };
     this.save(job);
-    this.bus.emit("job", job);
+    this.bus.emit("job", toJobView(job));
     void this.start(job.job_id);
     return job;
   }
 
+  /** Resolves when the job is no longer queued or running; the full record (with checkpoint) is returned for callers inside the process. */
   async wait(jobId: string): Promise<JobRecord> {
-    const p = this.running.get(jobId);
-    if (p) await p;
-    return this.get(jobId) as JobRecord;
+    for (;;) {
+      const p = this.running.get(jobId);
+      if (p) await p;
+      const job = this.load(jobId);
+      if (!job) throw new Error(`unknown job ${jobId}`);
+      if (job.status !== "queued" && job.status !== "running") return job;
+      if (!this.running.has(jobId)) await new Promise((r) => setTimeout(r, 50));
+    }
   }
 
   resumeIncomplete(): number {
@@ -114,14 +132,14 @@ export class JobRunner {
   }
 
   private async execute(jobId: string): Promise<void> {
-    const job = this.get(jobId);
+    const job = this.load(jobId);
     if (!job) return;
     const def = this.defs.get(job.type);
     if (!def) return;
     job.status = "running";
     job.attempts += 1;
     this.save(job);
-    this.bus.emit("job", job);
+    this.bus.emit("job", toJobView(job));
     const steps = def.steps(job.input);
     try {
       for (let i = 0; i < steps.length; i++) {
@@ -131,7 +149,7 @@ export class JobRunner {
         step.status = "running";
         step.started_at = nowIso();
         this.save(job);
-        this.bus.emit("job", job);
+        this.bus.emit("job", toJobView(job));
         await stepDef.run({
           checkpoint: job.checkpoint,
           note: (text) => {
@@ -139,38 +157,38 @@ export class JobRunner {
           },
           progress: () => {
             this.save(job);
-            this.bus.emit("job", job);
+            this.bus.emit("job", toJobView(job));
           },
         });
         step.status = "done";
         step.finished_at = nowIso();
         this.save(job);
-        this.bus.emit("job", job);
+        this.bus.emit("job", toJobView(job));
       }
       job.result = def.finish(job.input, job.checkpoint);
       job.status = "complete";
       this.save(job);
-      this.bus.emit("job", job);
-      this.bus.emit(`job:${job.type}:complete`, job);
+      this.bus.emit("job", toJobView(job));
+      this.bus.emit(`job:${job.type}:complete`, toJobView(job));
     } catch (err) {
       const running = job.steps.find((s) => s.status === "running");
       if (running) running.status = "failed";
       job.status = "failed";
       job.error = err instanceof Error ? err.message : String(err);
       this.save(job);
-      this.bus.emit("job", job);
+      this.bus.emit("job", toJobView(job));
     }
   }
 
-  retry(jobId: string): JobRecord | undefined {
-    const job = this.get(jobId);
-    if (!job || job.status !== "failed") return job;
+  retry(jobId: string): JobView | undefined {
+    const job = this.load(jobId);
+    if (!job || job.status !== "failed") return job ? toJobView(job) : undefined;
     for (const s of job.steps) if (s.status === "failed") s.status = "pending";
     job.status = "queued";
     job.error = null;
     this.save(job);
     void this.start(job.job_id);
-    return job;
+    return toJobView(job);
   }
 
   private save(job: JobRecord): void {

@@ -17,6 +17,8 @@ export const Before: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds,
   const acc = snap.baseline.run.metrics!.accuracy;
   const daily = snap.daily.slice(-7);
   const over = daily.reduce((s, d) => s + d.overrides, 0) / daily.reduce((s, d) => s + d.volume, 0);
+  const before = snap.daily.slice(0, 7);
+  const overBefore = before.reduce((s, d) => s + d.overrides, 0) / Math.max(1, before.reduce((s, d) => s + d.volume, 0));
   return (
     <Scene seconds={seconds}>
       <div className="lower">
@@ -30,7 +32,7 @@ export const Before: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds,
           <StatTile label="Coverage · last 7 days vs golden v1" value={pct(snap.coverage_v1.coverage)} sub={`${snap.coverage_v1.covered} of ${snap.coverage_v1.total} traces within the golden set's neighbourhood`} tone="bad" />
         </div>
         <div style={{ zoom: 1.6 }}>
-          <StatTile label="Analyst override rate · last 7 days" value={pct(over)} sub="was 4.2% the week before the migration" tone="bad" />
+          <StatTile label="Analyst override rate · last 7 days" value={pct(over)} sub={`was ${pct(overBefore)} the week before the migration`} tone="bad" />
         </div>
       </Fade>
       <div style={{ position: "absolute", left: 96, top: 620 }}>
@@ -229,7 +231,7 @@ const PROOF: Array<{ where: string; what: string; pinned: string }> = [
   { where: "MIT CSAIL", what: "owned retrieval + evaluation design for RAG across 12 health domains in production", pinned: "evaluation design and monitoring are things I already own" },
   { where: "FrontDesk", what: "customer interviews → a technical design through eng, design and CEO review → a shipped lead pipeline on durable workflows → iteration", pinned: "the trace → internal tool → gate shape" },
   { where: "Valency", what: "a 25-experiment benchmarking program with paired-bootstrap CIs and LLM-as-judge", pinned: "the interval on the score is my code" },
-  { where: "Holographic Studio", what: "gesture-controlled music, an idea that already worked + the layer that made it a recording studio", pinned: "existing idea → missing layer" },
+  { where: "Holographic Studio", what: "a vocal-cover recorder where hand gestures drive autotune, echo and volume, exported as one synced MP4", pinned: "existing idea → missing layer" },
   { where: "Founder", what: "Skinsnap, zero to 10,000+ users, acquired", pinned: "what “the customer says it's broken” costs" },
   { where: "Microsoft Delta", what: "where I would like to build the next one", pinned: "" },
 ];

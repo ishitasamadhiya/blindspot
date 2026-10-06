@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import type { Route } from "../lib/router";
 
 export const Logo: React.FC<{ size?: number }> = ({ size = 22 }) => (
@@ -16,7 +16,18 @@ const NAV: Array<{ key: Route; label: string; step: string }> = [
   { key: "releases", label: "Release gate", step: "4" },
 ];
 
-export const Shell: React.FC<{ route: Route; engagement?: { customer: string; agent: string } | null; children: React.ReactNode; embedder?: string; judge?: string }> = ({ route, engagement, children, embedder, judge }) => (
+export const Shell: React.FC<{ route: Route; engagement?: { customer: string; agent: string } | null; children: React.ReactNode; embedder?: string; judge?: string }> = ({ route, engagement, children, embedder, judge }) => {
+  const main = useRef<HTMLElement>(null);
+  const first = useRef(true);
+  useEffect(() => {
+    document.title = `${NAV.find((n) => n.key === route)?.label ?? "Blindspot"} · Blindspot`;
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    main.current?.focus();
+  }, [route]);
+  return (
   <div className="shell">
     <aside className="sidebar">
       <div className="brand">
@@ -42,6 +53,9 @@ export const Shell: React.FC<{ route: Route; engagement?: { customer: string; ag
         </div>
       </div>
     </aside>
-    <main className="main">{children}</main>
+    <main className="main" ref={main} tabIndex={-1} style={{ outline: "none" }}>
+      {children}
+    </main>
   </div>
-);
+  );
+};

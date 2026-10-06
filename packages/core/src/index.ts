@@ -13,4 +13,5 @@ export * from "./gate.js";
 export * from "./golden.js";
 export * from "./seed.js";
 export * from "./layout.js";
-export * from "./pipeline.js";
+export * from "./traces.js";
+export * from "./evaluate.js";

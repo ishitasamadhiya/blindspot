@@ -58,7 +58,7 @@ export const CoverageMap: React.FC<{
         <rect x={0} y={0} width={width} height={height} rx={8} fill="var(--surface-2)" stroke="var(--border)" />
         {goldenReveal > 0.5 && neighbourhood ? <path d={neighbourhood} fill="var(--golden)" fillOpacity={0.07 * Math.min(1, (goldenReveal - 0.5) * 2)} stroke="var(--golden)" strokeOpacity={0.5} strokeDasharray="5 4" strokeWidth={1.2} /> : null}
         {take(golden, goldenReveal).map((p) => (
-          <circle key={p.id} cx={sx(p.x)} cy={sy(p.y)} r={2.6} fill="var(--golden)" opacity={dim ? 0.35 : 0.75} />
+          <circle key={p.id} cx={sx(p.x)} cy={sy(p.y)} r={2.6} fill="var(--golden)" opacity={dim ? 0.35 : 0.9} />
         ))}
         {take(covered, coveredReveal).map((p) => (
           <circle key={p.id} cx={sx(p.x)} cy={sy(p.y)} r={2.4} fill="var(--covered)" opacity={dim ? 0.3 : 0.7} />

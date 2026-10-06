@@ -20,6 +20,7 @@ import {
   newContext,
   layoutMap,
   pairedBootstrapCI,
+  segmentResults,
   selectRepresentatives,
   toFoundryRows,
   type BlindSpot,
@@ -36,14 +37,13 @@ import {
   type Judge,
   type JudgeVerdict,
   type MapPoint,
-  type SegmentMetric,
   type Selection,
   type Trace,
 } from "@blindspot/core";
 import type { Db } from "./db.js";
 import { getMeta, json, newId, nowIso, resetDb, setMeta } from "./db.js";
 import type { EventBus } from "./events.js";
-import type { JobRecord, JobRunner } from "./jobs.js";
+import type { JobRecord, JobRunner, JobView } from "./jobs.js";
 
 export interface CoverageRunSummary {
   run_id: string;
@@ -92,6 +92,8 @@ export interface DailyStat {
   zero_dollar_approvals: number;
 }
 
+const DECISIONS: readonly Decision[] = ["APPROVE", "REJECT", "ESCALATE"];
+
 const ENGAGEMENT = {
   customer: "Contoso Foods",
   agent: "Deduction-claim validator",
@@ -131,7 +133,8 @@ export class Services {
   }
 
   seedDemo(opts: { days?: number; seed?: number; baseline?: boolean } = {}): { golden: number; traces: number; pending: number } {
-    const days = opts.days ?? 7;
+    const days = Number(opts.days ?? 7);
+    if (!Number.isFinite(days) || days < 1 || days > 14) throw new Error(`days must be between 1 and 14, got ${String(opts.days)}`);
     const data = generateSeed(opts.seed ?? 42);
     resetDb(this.db);
     const cutoff = new Date(Date.parse("2026-09-23T00:00:00Z") + days * 86_400_000).toISOString();
@@ -216,7 +219,8 @@ export class Services {
       this.bus.emit("traces", { ingested: traces.length, latest: traces[traces.length - 1]?.received_at ?? null, replay: "done" });
       return { started: true, pending };
     }
-    const seconds = Math.max(2, opts.seconds ?? 18);
+    const requested = Number(opts.seconds);
+    const seconds = Math.max(2, Number.isFinite(requested) ? requested : 18);
     const batches = Math.min(traces.length, Math.round(seconds * 8));
     const perBatch = Math.ceil(traces.length / batches);
     let i = 0;
@@ -291,7 +295,7 @@ export class Services {
     const v = this.goldenVersions().find((x) => x.version === version);
     if (!v) throw new Error(`unknown golden version ${version}`);
     const ids = new Set(v.case_ids);
-    const rows = this.db.prepare("SELECT * FROM golden_cases").all() as Array<Record<string, string | null>>;
+    const rows = this.db.prepare("SELECT * FROM golden_cases ORDER BY case_id").all() as Array<Record<string, string | null>>;
     return rows.filter((r) => ids.has(r.case_id as string)).map(rowToGoldenCase);
   }
 
@@ -309,7 +313,9 @@ export class Services {
 
   exportFoundry(version: string): string {
     const cases = this.goldenCases(version);
-    return toFoundryRows(cases)
+    const latest = this.evalRuns().find((r) => r.golden_version === version && r.status === "complete");
+    const outputs = latest ? new Map(latest.results.map((r) => [r.case_id, { decision: r.output.decision, amount: r.output.amount }])) : undefined;
+    return toFoundryRows(cases, outputs)
       .map((r) => JSON.stringify(r))
       .join("\n");
   }
@@ -387,12 +393,17 @@ export class Services {
     const windowDays = opts.window_days ?? 7;
     const windowEnd = new Date(Date.parse(latest) + 60_000).toISOString();
     const windowStart = new Date(Date.parse(windowEnd) - windowDays * 86_400_000).toISOString();
+    const clampInt = (v: unknown, dflt: number, lo: number, hi: number) => {
+      const n = Math.floor(Number(v));
+      return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : dflt;
+    };
     return this.runner.enqueue("coverage", {
+      run_id: newId("cov"),
       golden_version: opts.golden_version ?? this.currentGoldenVersion(),
       window_start: windowStart,
       window_end: windowEnd,
-      budget: opts.budget ?? 10,
-      max_clusters: opts.max_clusters ?? 3,
+      budget: clampInt(opts.budget, 10, 1, 50),
+      max_clusters: clampInt(opts.max_clusters, 3, 1, 8),
       seed: parseInt(getMeta(this.db, "seed") ?? "42", 10),
     });
   }
@@ -459,7 +470,9 @@ export class Services {
   gradeItem(itemId: string, expert: { decision: Decision; amount: number; note?: string; grader?: string }): GradingItem {
     const row = this.db.prepare("SELECT * FROM grading_items WHERE item_id = ?").get(itemId) as Record<string, string> | undefined;
     if (!row) throw new Error("unknown grading item");
-    const record = { decision: expert.decision, amount: Math.max(0, Number(expert.amount) || 0), note: expert.note ?? "", grader: expert.grader ?? "expert", graded_at: nowIso() };
+    if (!DECISIONS.includes(expert.decision)) throw new Error(`decision must be one of ${DECISIONS.join(", ")}`);
+    const amount = Math.max(0, Number(expert.amount) || 0);
+    const record = { decision: expert.decision, amount: expert.decision === "APPROVE" ? amount : 0, note: String(expert.note ?? "").slice(0, 2000), grader: String(expert.grader ?? "expert").slice(0, 120), graded_at: nowIso() };
     this.db.prepare("UPDATE grading_items SET status = 'graded', expert = ? WHERE item_id = ?").run(JSON.stringify(record), itemId);
     const item = this.gradingQueue().find((g) => g.item_id === itemId) as GradingItem;
     this.bus.emit("grade", { item_id: itemId, cluster_id: item.cluster_id, status: "graded" });
@@ -533,7 +546,7 @@ export class Services {
     });
   }
 
-  coverageJobInFlight(goldenVersion: string): JobRecord | undefined {
+  coverageJobInFlight(goldenVersion: string): JobView | undefined {
     return this.runner.list().find((j) => j.type === "coverage" && (j.status === "running" || j.status === "queued") && (j.input as { golden_version: string }).golden_version === goldenVersion);
   }
 
@@ -585,7 +598,7 @@ export class Services {
   // ---------- job definitions ----------
 
   private registerJobs(): void {
-    type CovInput = { golden_version: string; window_start: string; window_end: string; budget: number; max_clusters: number; seed: number };
+    type CovInput = { run_id: string; golden_version: string; window_start: string; window_end: string; budget: number; max_clusters: number; seed: number };
     this.runner.register<CovInput>({
       type: "coverage",
       label: (i) => `Coverage of ${i.window_start.slice(0, 10)} → ${i.window_end.slice(0, 10)} against golden ${i.golden_version}`,
@@ -603,13 +616,17 @@ export class Services {
         {
           name: "embed claims",
           run: async ({ checkpoint, note }) => {
-            const golden = this.goldenCases(input.golden_version);
+            const byId = new Map(this.goldenCases(input.golden_version).map((c) => [c.case_id, c]));
+            const golden = (checkpoint.golden_ids as string[]).map((id) => byId.get(id) as GoldenCase);
             const traces = (checkpoint.trace_ids as string[]).map((id) => this.trace(id) as Trace);
-            const gv = await this.embedder.embed(golden.map((g) => JSON.stringify(g.claim)));
-            const tv = await this.embedder.embed(traces.map((t) => JSON.stringify(t.claim)));
-            checkpoint.golden_vecs = gv.map(vecToB64);
-            checkpoint.trace_vecs = tv.map(vecToB64);
-            note(`${gv.length + tv.length} vectors via ${this.embedder.name} (${this.embedder.dim}-d)`);
+            // one call for both sets, so an embedder that degrades mid-run degrades for every vector in the run
+            const all = await this.embedder.embed([...golden.map((g) => JSON.stringify(g.claim)), ...traces.map((t) => JSON.stringify(t.claim))]);
+            const dim = all[0]?.length ?? this.embedder.dim;
+            if (all.some((v) => v.length !== dim)) throw new Error("embedder returned vectors of mixed dimension");
+            checkpoint.golden_vecs = all.slice(0, golden.length).map(vecToB64);
+            checkpoint.trace_vecs = all.slice(golden.length).map(vecToB64);
+            checkpoint.embedder = all.length && dim !== this.embedder.dim ? `${this.embedder.name} (degraded to ${dim}-d fallback)` : this.embedder.name;
+            note(`${all.length} vectors via ${checkpoint.embedder as string} (${dim}-d)`);
           },
         },
         {
@@ -635,6 +652,7 @@ export class Services {
             const tv = (checkpoint.trace_vecs as string[]).map(b64ToVec);
             const golden = this.goldenCases(input.golden_version);
             const uncovered = traceIds.map((id, i) => ({ id, i })).filter((x) => !(hits[x.i] as CoverageHit).covered);
+            const index = new Map(traceIds.map((id, i) => [id, i]));
             const spots: BlindSpot[] = [];
             const clusterOf: Record<string, string> = {};
             if (uncovered.length >= 4) {
@@ -669,9 +687,34 @@ export class Services {
                 });
               }
             }
+            // clusters the naming cannot tell apart are one blind spot: merge them before ranking
+            const merged = new Map<string, BlindSpot>();
+            for (const s of spots) {
+              const prev = merged.get(s.name);
+              if (!prev) {
+                merged.set(s.name, s);
+                continue;
+              }
+              const n = prev.volume + s.volume;
+              prev.failure_rate = (prev.failure_rate * prev.volume + s.failure_rate * s.volume) / n;
+              prev.novelty = (prev.novelty * prev.volume + s.novelty * s.volume) / n;
+              prev.trace_ids = [...prev.trace_ids, ...s.trace_ids];
+              prev.volume = n;
+              prev.volume_share = n / Math.max(1, traceIds.length);
+              prev.score = prev.volume_share * (0.25 + prev.failure_rate) * prev.novelty;
+              prev.value_at_risk += s.value_at_risk;
+              for (const [r, c] of Object.entries(s.retailers)) prev.retailers[r] = (prev.retailers[r] ?? 0) + c;
+            }
+            const mergedSpots = Array.from(merged.values());
+            for (const s of mergedSpots) {
+              if (s.trace_ids.length > 1) {
+                const members = s.trace_ids.map((id) => ({ id, vec: tv[index.get(id) as number] as Float32Array }));
+                s.medoid_trace_id = selectRepresentatives(members, { budget: 1 }).ids[0] ?? s.medoid_trace_id;
+              }
+            }
             const floor = Math.max(12, Math.round(traceIds.length * 0.03));
-            const reported = spots.filter((s) => s.volume >= floor).sort((a, b) => b.score - a.score);
-            const tail = spots.filter((s) => s.volume < floor);
+            const reported = mergedSpots.filter((s) => s.volume >= floor).sort((a, b) => b.score - a.score);
+            const tail = mergedSpots.filter((s) => s.volume < floor);
             reported.forEach((s, i) => {
               s.cluster_id = `bs-${i + 1}`;
               for (const id of s.trace_ids) clusterOf[id] = s.cluster_id;
@@ -761,11 +804,11 @@ export class Services {
               trace_count: traceIds.length,
               long_tail: checkpoint.long_tail as CoverageAnalysisStored["long_tail"],
             };
-            const runId = newId("cov");
+            const runId = input.run_id;
             const covered = hits.filter((h) => h.covered).length;
             this.db
-              .prepare("INSERT INTO coverage_runs(run_id,created_at,golden_version,window_start,window_end,embedder,judge,threshold,coverage,covered,total,analysis) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")
-              .run(runId, nowIso(), input.golden_version, input.window_start, input.window_end, this.embedder.name, this.judge.name, checkpoint.threshold as number, checkpoint.coverage as number, covered, hits.length, JSON.stringify(analysis));
+              .prepare("INSERT OR REPLACE INTO coverage_runs(run_id,created_at,golden_version,window_start,window_end,embedder,judge,threshold,coverage,covered,total,analysis) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")
+              .run(runId, nowIso(), input.golden_version, input.window_start, input.window_end, (checkpoint.embedder as string | undefined) ?? this.embedder.name, this.judge.name, checkpoint.threshold as number, checkpoint.coverage as number, covered, hits.length, JSON.stringify(analysis));
             checkpoint.run_id = runId;
             delete checkpoint.golden_vecs;
             delete checkpoint.trace_vecs;
@@ -832,9 +875,9 @@ export class Services {
             const metrics: EvalMetrics = {
               n: results.length,
               accuracy: bootstrapMeanCI(passes, { seed: input.seed }),
-              by_cluster: segment(results, (r) => r.cluster_id, (k) => clusterNames.get(k) ?? k),
-              by_retailer: segment(results, (r) => (byId.get(r.case_id)?.claim as { retailer: string } | undefined)?.retailer, (k) => k),
-              by_source: segment(results, (r) => byId.get(r.case_id)?.source, (k) => k),
+              by_cluster: segmentResults(results, (r) => r.cluster_id, (k) => clusterNames.get(k) ?? k),
+              by_retailer: segmentResults(results, (r) => (byId.get(r.case_id)?.claim as { retailer: string } | undefined)?.retailer, (k) => k),
+              by_source: segmentResults(results, (r) => byId.get(r.case_id)?.source, (k) => k),
             };
             if (input.baseline_run_id) {
               const base = this.evalRun(input.baseline_run_id);
@@ -873,19 +916,6 @@ export class Services {
       finish: (input, checkpoint) => ({ run_id: input.run_id, metrics: checkpoint.metrics }),
     });
   }
-}
-
-function segment(results: CaseResult[], keyOf: (r: CaseResult) => string | undefined, labelOf: (k: string) => string): SegmentMetric[] {
-  const groups = new Map<string, CaseResult[]>();
-  for (const r of results) {
-    const k = keyOf(r);
-    if (!k) continue;
-    if (!groups.has(k)) groups.set(k, []);
-    (groups.get(k) as CaseResult[]).push(r);
-  }
-  return Array.from(groups.entries())
-    .map(([key, rs]) => ({ key, label: labelOf(key), n: rs.length, pass_rate: rs.filter((r) => r.pass).length / rs.length }))
-    .sort((a, b) => b.n - a.n);
 }
 
 function round4(x: number): number {

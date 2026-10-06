@@ -71,7 +71,7 @@ Given the retailer's claim JSON and the agent's decision, decide whether the dec
 - ESCALATE when the claim cannot be matched to a contract or invoice.
 Reply with JSON only: {"pass": boolean, "confidence": 0..1, "rationale": "one sentence"}. If the claim uses fields you cannot map to the policy, say so and lower your confidence.`;
 
-/** gpt-4o-mini as an LLM judge; falls back to routing everything to experts (no verdicts) if the call fails. */
+/** gpt-4o-mini as an LLM judge; on the first failed call it degrades for the rest of the process to the SimulatedJudge and reports that through onFallback. */
 export class AzureOpenAIJudge implements Judge {
   readonly name: string;
   private fallback = new SimulatedJudge();

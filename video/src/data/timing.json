@@ -67,15 +67,15 @@
  },
  "blocked": {
   "index": 12,
-  "seconds": 6.09,
+  "seconds": 6.11,
   "file": "audio/blocked.wav",
-  "text": "Release one-three on v2: eighty-seven point seven, zero on the portal cluster. Blocked, with the reason named."
+  "text": "Release one-three on v2: eighty-seven point nine, zero on the portal cluster. Blocked, with the reason named."
  },
  "fixed": {
   "index": 13,
-  "seconds": 6.99,
+  "seconds": 7.03,
   "file": "audio/fixed.wav",
-  "text": "A fourteen-line parser patch. Release one-four: ninety-three point seven, plus six points, coverage above ninety. Pass."
+  "text": "A fourteen-line parser patch. Release one-four: ninety-four point zero, plus six points, coverage above ninety. Pass."
  },
  "control": {
   "index": 14,

@@ -19,8 +19,8 @@ clips in `video/public/audio/` (same file names) and re-running the render.
 | 9 | stack | TypeScript end to end: React, Node and SQLite with checkpointed jobs, REST plus live events, tested math, optional Azure OpenAI. |
 | 10 | before | Before: green dashboard, unhappy customer. |
 | 11 | harvest | After: thirty cases graded. Golden set v2. |
-| 12 | blocked | Release one-three on v2: eighty-seven point seven, zero on the portal cluster. Blocked, with the reason named. |
-| 13 | fixed | A fourteen-line parser patch. Release one-four: ninety-three point seven, plus six points, coverage above ninety. Pass. |
+| 12 | blocked | Release one-three on v2: eighty-seven point nine, zero on the portal cluster. Blocked, with the reason named. |
+| 13 | fixed | A fourteen-line parser patch. Release one-four: ninety-four point zero, plus six points, coverage above ninety. Pass. |
 | 14 | control | A control: the next release moves one point, the interval includes zero, the gate stays green. |
 | 15 | whyme | I'm Ishita, EECS and Business at Berkeley M.E.T. I like finding messy product problems, figuring out what matters, and building the system that fixes them. |
 | 16 | proof | MIT CSAIL: evaluation design for RAG in production. FrontDesk: a customer problem taken from interviews to a shipped pipeline. Valency: benchmarking on bootstrap intervals. Holographic Studio: an idea that already worked, plus its missing layer. |

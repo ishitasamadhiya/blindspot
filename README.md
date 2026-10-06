@@ -6,7 +6,7 @@ Blindspot is a coverage gate for deployed AI agents. It measures how much of the
 days of production traffic the evaluation golden set actually resembles, clusters the traffic
 the golden set has never seen into named *blind spots*, gets ten cases per blind spot graded by
 a domain expert instead of a thousand, versions the result as a Foundry-compatible dataset, and
-blocks a release whose 94% was a score about last month.
+blocks a release whose 94% was a score about August.
 
 Built as a product case study for Microsoft's forward-deployed engineering team (Microsoft
 Delta), whose engagements start with "an evaluation harness, graded by domain experts, replayed
@@ -22,7 +22,7 @@ npm install
 npm run demo        # builds the web app, seeds a demo engagement, serves http://localhost:4040
 ```
 
-No keys, no network, no native dependencies: Node 22.13+ is the whole requirement. `npm run
+No keys, no network at runtime, no native build step: Node 22.13+ is the whole requirement. `npm run
 story` runs the same loop headless in about fifteen seconds and exits with the gate's status.
 
 ## Contents
@@ -49,15 +49,15 @@ The demo engagement is Contoso Foods, a CPG manufacturer whose retailers (Northw
 Fabrikam Grocers, Tailwind Markets) short-pay invoices and submit trade-promotion deduction
 claims. An agent validates each claim against Contoso's promo contracts and returns
 APPROVE / REJECT / ESCALATE with a reimbursable amount. It was built in August from a golden set
-of 400 historical claims graded by two deductions analysts, scored 94.0% on them, and was deployed
+of 400 historical claims graded by two deductions analysts, scored 94.3% on them, and was deployed
 into Contoso's tenant in mid-September.
 
 Three weeks later:
 
 | | week before the migration (Sep 23–29) | last 7 days (Sep 30–Oct 6) |
 |---|---|---|
-| eval accuracy on golden v1 | 94.0% | 94.0% |
-| analyst override rate in production | 4.2% | 25.3% |
+| eval accuracy on golden v1 | 94.3% | 94.3% |
+| analyst override rate in production | 4.0% | 25.2% |
 | coverage of traffic by golden v1 | 91.1% | **53.8%** |
 
 Both numbers in the last column are true at the same time. Northwind migrated to a new portal
@@ -71,9 +71,10 @@ shapes are in the golden set, so the eval cannot see any of it, and it stays gre
 
 Delta's practice is the right idea: a golden set built from real decisions, graded by the people
 who own the outcome, replayed on every release. It is CI for agents. Microsoft Foundry also
-already samples production traces into versioned evaluation datasets (intelligent sampling,
-MinHash diversity, low-intent filtering) and runs continuous evaluation on sampled production
-interactions. Those are the ingredients. Blindspot does not replace them.
+already samples production traces into versioned evaluation datasets (intelligent sampling with
+MinHash diversity and low-intent filtering, per the traces-to-dataset preview docs, September 2026)
+and runs continuous evaluation on sampled production interactions. Those are the ingredients.
+Blindspot does not replace them.
 
 ## The missing layer
 
@@ -102,14 +103,14 @@ each cluster is **named from the fields that set it apart** from the golden set,
 anyone typed:
 
 ```
-bs-1  invoice_refs · line_items · bundle                    n=202  fail=89.6%  novelty=0.64  score=0.1499
+bs-1  invoice_refs · line_items · bundle                    n=202  fail=90.1%  novelty=0.64  score=0.1505
 bs-2  ad_run · coop_program · proof_of_performance          n= 89  fail=100%   novelty=0.63  score=0.0712
 bs-3  scan_period · reimburse_rate_per_unit · units_scanned n= 78  fail=35.9%  novelty=0.38  score=0.0181
 bs-4  notes · currency=cad · promo_type=bill-back           n= 87  fail=5.7%   novelty=0.03  score=0.0009
 ```
 
 The fourth cluster is real but harmless (resubmissions with a note, Canadian claims) and the ranking
-puts it last; clusters under a reporting floor (3% of the window) are summarised as a long tail.
+puts it last; clusters under a reporting floor (12 traces or 3% of the window, whichever is larger) are summarised as a long tail.
 
 ![Blind spots ranked, with the embedding diff of a golden claim versus the cluster's medoid](docs/screenshots/map.png)
 
@@ -124,7 +125,7 @@ confidence 0.4, which is the system saying *do not trust me unattended on this c
 
 Graded cases commit to an immutable, content-addressed golden version (`v2`: 430 cases, +30 from
 three blind spots) that exports as a Foundry evaluation dataset (`query`, `response`,
-`ground_truth`, `context`).
+`ground_truth`, `context`); `response` carries the latest completed evaluation's outputs for that version.
 
 ### 3. Block the release
 
@@ -140,9 +141,9 @@ A release ships only if the eval it passed is about this week:
 
 ![Release gate: release/1.3 blocked on golden v2 with the failing blind spots named](docs/screenshots/releases.png)
 
-On the demo data: release/1.3 re-run on golden v2 scores 87.7% [84.4, 90.7] with 0%, 0% and 10% on
-the three blind spots and is **blocked**. A fourteen-line parser patch (release/1.4) scores 93.7%
-[91.4, 95.8], +6.0 pts [4.0, 8.4] paired against 1.3, coverage 90.6%, and **passes**. A control
+On the demo data: release/1.3 re-run on golden v2 scores 87.9% [84.7, 90.9] with 0%, 0% and 10% on
+the three blind spots and is **blocked**. A fourteen-line parser patch (release/1.4) scores 94.0%
+[91.6, 96.0], +6.0 pts [4.0, 8.4] paired against 1.3, coverage 90.6%, and **passes**. A control
 release that moves the number by −0.9 pts [−2.8, +0.9] also passes: the interval includes zero, so
 the gate does not cry wolf. `npm run gate` prints the checks and exits non-zero when blocked.
 
@@ -151,8 +152,8 @@ the gate does not cry wolf. `npm run gate` prints the checks and exits non-zero 
 ```bash
 npm run demo          # build web, seed, serve on :4040 (set PORT or BLINDSPOT_PORT to change)
 npm run dev           # development: API on :4040 with reload, Vite on :5173 with proxy
-npm run story         # the whole loop headless; exit code = gate status
-npm run gate          # evaluate the latest run's gate; exit 0 PASS, 1 BLOCKED
+npm run story         # the whole loop headless; exit code = release/1.4's gate (0 PASS, 1 BLOCKED)
+npm run gate          # the latest run's gate (or --run <id>); exit 0 PASS, 1 BLOCKED, 2 no gate yet
 npm run seed -- --days 14   # reseed with all 14 days ingested (no replay step)
 ```
 
@@ -182,13 +183,16 @@ parser cannot find the amount), the judge's pre-grades, the bootstrap intervals,
 gate verdict.
 
 Simulated, and labelled as such in the UI: the judge in offline mode (`SimulatedJudge`) re-derives
-a verdict from the fields it recognises, is right ~90% of the time on familiar shapes and visibly
-unsure on unfamiliar ones, which is the behaviour an unvalidated LLM judge has in practice. The
+a verdict from the fields it recognises, agrees with the hidden labels about 85% of the time on
+familiar shapes (it knows nothing about the period or duplicate rules and flips a further 8% of
+verdicts) and is visibly unsure on unfamiliar ones, which is the behaviour an unvalidated LLM judge
+has in practice. The
 "let the analysts finish" button fills expert labels from the seed. With Azure OpenAI configured,
 the judge and the embedder are real.
 
-The only money on screen is "claim value in uncovered traffic", summed from seeded per-claim
-amounts and marked synthetic.
+The only aggregate dollar figure on screen is "claim value in uncovered traffic" and its per-cluster
+breakdown, summed from seeded per-claim amounts and marked synthetic; the individual amounts on
+claims, grades and golden cases are the seeded values themselves.
 
 ## Architecture
 
@@ -199,8 +203,8 @@ apps/web        React 19 + Vite + TypeScript. Five screens; pure presentational 
                 (the video renders the same components with recorded data).
 apps/server     Fastify + Node's built-in SQLite. REST, server-sent events, a checkpointing job
                 runner, demo seeding/replay, optional Azure OpenAI adapters, CLI.
-packages/core   The algorithms, dependency-free and unit-tested: embedder, coverage, clustering
-                and naming, selection, stats, agent under test, simulated judge, gate, seed.
+packages/core   The algorithms, dependency-free, with unit tests on the math and the agent: embedder,
+                coverage, clustering and naming, selection, stats, agent under test, judge, gate, seed.
 video           Remotion composition for the demo video (scenes reuse apps/web components).
 ```
 
@@ -214,8 +218,9 @@ aggregates with bootstrap intervals, and evaluates the gate (waiting for an in-f
 if needed). Everything emits events on `/api/events`, which the UI (and the CLI) subscribe to.
 
 **Durable jobs.** `apps/server/src/jobs.ts` is a small runner with the contract that matters:
-every step checkpoints to SQLite before the next starts, steps are idempotent, and on restart the
-runner resumes incomplete jobs at the first unfinished step. The eval job checkpoints per batch of
+every step checkpoints to SQLite before the next starts, steps are written to be safely re-run
+(ids are allocated up front and writes are upserts), and on restart the runner resumes incomplete
+jobs at the first unfinished step. The eval job checkpoints per batch of
 40 cases (including the agent's duplicate-invoice state) so a crash mid-run resumes rather than
 restarts. In production this maps onto Azure Durable Functions or Temporal activities without
 changing the step bodies.
@@ -233,10 +238,10 @@ changing the step bodies.
 |---|---|---|
 | Threshold calibrated on the golden set (held-out 5th percentile) instead of a fixed cosine cut-off | "covered" is defined relative to how tight the golden set itself is, so it transfers across engagements and embedders | 5% of a perfectly in-distribution stream is flagged uncovered by construction; the reporting floor keeps that from becoming fake blind spots |
 | Cluster the *uncovered* traffic, not the low-scoring traffic | on a new shape the judge is unvalidated too; low score is not a trustworthy signal there | a cluster can be uncovered and harmless (bs-4), so ranking by failure signals and novelty matters |
-| Hashing embedder over field paths and values as the offline default | zero dependencies, deterministic, and structure is exactly what distinguishes a new export format | weaker on free-text semantics; swap in `text-embedding-3-small` via env, or a local MiniLM, behind the same `Embedder` interface |
+| Hashing embedder over field paths and values as the offline default | zero dependencies, deterministic, and structure is exactly what distinguishes a new export format | weaker on free-text semantics; swap in `text-embedding-3-small` via env behind the same `Embedder` interface (a local MiniLM is on the roadmap) |
 | Cluster-aware map layout (global PCA for placement, local PCA inside each group, seeded jitter) | raw PCA of near-identical structured claims collapses every shape to a dot | the map's distances are meaningful within a group, not between groups; the legend says so |
 | Expert selection = medoid + neighbours + random + judge disagreements, budget 10 | the medoid teaches the shape, random draws catch what "typical" misses, disagreements spend expert time where the judge wobbles | not active learning; a v2 would pick by expected information gain |
-| Paired bootstrap (10k resamples, fixed seed) on release deltas | the same cases are scored by both releases; pairing removes case difficulty from the variance | 10k resamples over 430 cases is ~1 s in JS; fine for a gate, would move to a worker at scale |
+| Paired bootstrap (10k resamples, fixed seed) on release deltas | the same cases are scored by both releases; pairing removes case difficulty from the variance | 10k resamples over 430 cases takes well under 100 ms in JS; fine for a gate |
 | Gate on coverage *and* per-blind-spot pass rate *and* regression interval | each catches a failure the others miss: a stale set, a known-bad region, and random noise | more things to explain; the checks list is the explanation |
 | Node's built-in `node:sqlite` | no native build step, so `npm install` works everywhere; real SQL for jobs and versions | marked experimental in Node 22; the data layer is one file if it needs to move |
 | Immutable, content-addressed golden versions exported as Foundry JSONL | reproducible evals and a path into Foundry's own evaluation flow | the export is the standard query/response/ground_truth/context shape; Blindspot's cluster metadata rides in `context` |
@@ -259,8 +264,10 @@ changing the step bodies.
 
 - A coverage or eval job that dies resumes at its last checkpoint on the next start (`resumeIncomplete`).
 - An eval run that is not `complete` **never** passes the gate.
-- If Azure embeddings fail mid-run the embedder degrades to the hashing embedder and emits a warning
-  event; if the Azure judge fails it degrades to the simulated judge and says so in every verdict.
+- If Azure embeddings fail mid-run the embedder degrades to the hashing embedder for the whole run
+  (golden and traffic are embedded in one call, so a run never mixes vector spaces), emits a warning
+  event and records the fallback on the coverage run; if the Azure judge fails it degrades to the
+  simulated judge and says so in every verdict.
 - A golden version with no coverage run gets one automatically before its gate is evaluated.
 - The browser's event stream reconnects when server pings stop, and every live view also polls.
 - Release gate evaluation is deterministic: same data, same seed, same verdict.

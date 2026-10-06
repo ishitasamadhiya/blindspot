@@ -68,7 +68,7 @@ export const TrendChart: React.FC<{
           );
         })}
         {labels.map((_, i) => (
-          <rect key={i} x={x(i) - (w - padL - padR) / (2 * Math.max(1, n - 1))} y={padT} width={(w - padL - padR) / Math.max(1, n - 1)} height={h - padT - padB} fill="transparent" onMouseEnter={() => setHover(i)} />
+          <rect key={i} x={x(i) - (w - padL - padR) / (2 * Math.max(1, n - 1))} y={padT} width={(w - padL - padR) / Math.max(1, n - 1)} height={h - padT - padB} fill="transparent" tabIndex={0} aria-label={`${labels[i]}: ${series.map((s) => `${s.label} ${yFormat(s.values[i] ?? 0)}`).join(", ")}`} onMouseEnter={() => setHover(i)} onFocus={() => setHover(i)} onBlur={() => setHover(null)} />
         ))}
       </svg>
       {hover !== null && hover < visible ? (

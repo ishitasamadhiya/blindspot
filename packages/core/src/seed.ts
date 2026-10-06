@@ -104,6 +104,15 @@ function policy(claimed: number, allowed: number, variant: Variant): Expected {
 }
 
 let seq = 0;
+const issuedInvoices = new Set<string>();
+// one draw from the shared stream (so the rest of the seed is unaffected), then step past any number already issued
+function nextInvoice(rng: Rng, lo: number, hi: number): string {
+  let n = randInt(rng, lo, hi);
+  while (issuedInvoices.has(`INV-${n}`)) n = n >= hi ? lo : n + 1;
+  const inv = `INV-${n}`;
+  issuedInvoices.add(inv);
+  return inv;
+}
 function nextId(prefix: string, rng: Rng): string {
   seq += 1;
   return `${prefix}-${String(seq).padStart(5, "0")}-${Math.floor(rng() * 9000 + 1000)}`;
@@ -124,7 +133,7 @@ function buildFlat(rng: Rng, at: number, retailerIdx: number, currency = "USD"):
     retailer: retailer.name,
     retailer_id: retailer.id,
     submitted_at: iso(at),
-    invoice_no: `INV-${randInt(rng, 400000, 489999)}`,
+    invoice_no: nextInvoice(rng, 400000, 489999),
     promo_code: contract.promo_code,
     promo_type: contract.promo_type,
     period: periodFor(contract, variant, rng),
@@ -165,7 +174,7 @@ function buildPortalV2(rng: Rng, at: number): Built {
     retailer_id: retailer.id,
     submitted_at: iso(at),
     export_version: "v2",
-    invoice_no: `INV-${randInt(rng, 490000, 499999)}`,
+    invoice_no: nextInvoice(rng, 490000, 499999),
     invoice_refs: rng() < 0.3 ? [`INV-${randInt(rng, 490000, 499999)}`] : [],
     promo_code: contract.promo_code,
     period: periodFor(contract, variant, rng),
@@ -188,7 +197,7 @@ function buildScanBack(rng: Rng, at: number): Built {
     retailer: retailer.name,
     retailer_id: retailer.id,
     submitted_at: iso(at),
-    invoice_no: `INV-${randInt(rng, 400000, 489999)}`,
+    invoice_no: nextInvoice(rng, 400000, 489999),
     promo_code: contract.promo_code,
     promo_type: "scan-back",
     scan_period: periodFor(contract, variant, rng),
@@ -257,6 +266,7 @@ function schedule(rng: Rng, start: number, days: number): Slot[] {
 
 export function generateSeed(seed = 42): SeedData {
   seq = 0;
+  issuedInvoices.clear();
   const rng = mulberry32(seed);
   const truth: Record<string, Expected> = {};
   const formats: Record<string, ClaimFormat> = {};

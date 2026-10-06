@@ -17,7 +17,8 @@ intelligent sampling and runs continuous evaluation, was verified against the Fo
 (traces-to-dataset, preview, September 2026) and absorbed into the positioning: those are the
 ingredient, and the five numbers Blindspot adds (coverage, blind spots of uncovered traffic,
 per-cluster judge agreement, paired-bootstrap deltas, a gate on representativeness) are not
-computed by Foundry, LangSmith, Arize or Braintrust.
+surfaced as first-class numbers in Foundry's evaluation docs, nor, as far as I could find, by the
+agent-observability tools I compared.
 
 ## Mechanically real discovery
 

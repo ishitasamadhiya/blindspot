@@ -57,13 +57,13 @@ export const ClaimDiff: React.FC<{ left: { title: string; claim: object }; right
         <div className="small muted" style={{ marginBottom: 6 }}>
           {left.title} <span className="faint">· fields the other side lacks are highlighted</span>
         </div>
-        <ClaimJson claim={left.claim} good={d.onlyA} maxHeight={maxHeight} />
+        <ClaimJson claim={left.claim} good={d.onlyA} maxHeight={maxHeight} focusable />
       </div>
       <div>
         <div className="small muted" style={{ marginBottom: 6 }}>
           {right.title}
         </div>
-        <ClaimJson claim={right.claim} highlight={d.onlyB} maxHeight={maxHeight} />
+        <ClaimJson claim={right.claim} highlight={d.onlyB} maxHeight={maxHeight} focusable />
       </div>
     </div>
   );
