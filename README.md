@@ -279,6 +279,20 @@ With these set, `text-embedding-3-small` embeds the claim JSON and `gpt-4o-mini`
 decisions against the deduction rubric (JSON verdicts with a confidence). The UI shows which
 embedder and judge are in use.
 
+## Deploying
+
+One container serves the API and the built web app; the SQLite file lives on a volume.
+
+```bash
+docker build -t blindspot .
+docker run -p 4040:4040 -v blindspot-data:/data blindspot
+```
+
+That image runs as-is on Azure Container Apps or App Service for Containers (set `PORT` if the
+platform assigns one, `BLINDSPOT_DB` to a mounted path, and the `AZURE_OPENAI_*` variables to
+turn on the real embedder and judge). `.github/workflows/ci.yml` runs the typecheck, the tests
+and `npm run story`, so the release gate's exit code is what makes the build green.
+
 ## Testing
 
 ```bash
