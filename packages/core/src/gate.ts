@@ -21,6 +21,7 @@ export interface GateInput {
   coverage: number | null;
   policy?: Partial<GatePolicy>;
   evaluated_at: string;
+  baseline_label?: string;
 }
 
 export function evaluateGate(input: GateInput): GateResult {
@@ -62,7 +63,7 @@ export function evaluateGate(input: GateInput): GateResult {
   if (m?.delta_vs_baseline) {
     const d = m.delta_vs_baseline;
     checks.push({
-      name: `no regression vs ${run.baseline_run_id ?? "baseline"}`,
+      name: `no regression vs ${input.baseline_label ?? run.baseline_run_id ?? "baseline"}`,
       pass: d.hi >= -policy.regression_tolerance,
       value: d.estimate,
       threshold: -policy.regression_tolerance,

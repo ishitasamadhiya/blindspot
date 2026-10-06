@@ -359,6 +359,7 @@ export class Services {
     this.db.prepare("INSERT INTO golden_versions(version,created_at,parent,case_ids,sha256,note) VALUES (?,?,?,?,?,?)").run(v.version, v.created_at, v.parent ?? null, JSON.stringify(v.case_ids), v.sha256, v.note);
     setMeta(this.db, "current_golden_version", version);
     this.bus.emit("golden", v);
+    this.startCoverage({ window_days: 7, golden_version: version });
     return v;
   }
 
@@ -519,6 +520,9 @@ export class Services {
       const prev = this.evalRuns().find((r) => r.golden_version === goldenVersion && r.status === "complete");
       baseline = prev?.run_id;
     }
+    if (!this.latestCoverageRun(goldenVersion) && !this.coverageJobInFlight(goldenVersion) && this.latestTraceAt()) {
+      this.startCoverage({ window_days: 7, golden_version: goldenVersion });
+    }
     return this.runner.enqueue("eval", {
       run_id: newId("run"),
       golden_version: goldenVersion,
@@ -527,6 +531,10 @@ export class Services {
       baseline_run_id: baseline ?? null,
       seed: parseInt(getMeta(this.db, "seed") ?? "42", 10),
     });
+  }
+
+  coverageJobInFlight(goldenVersion: string): JobRecord | undefined {
+    return this.runner.list().find((j) => j.type === "coverage" && (j.status === "running" || j.status === "queued") && (j.input as { golden_version: string }).golden_version === goldenVersion);
   }
 
   evalRuns(): EvalRun[] {
@@ -849,10 +857,13 @@ export class Services {
         },
         {
           name: "evaluate release gate",
-          run: ({ note }) => {
+          run: async ({ note }) => {
+            const inflight = this.coverageJobInFlight(input.golden_version);
+            if (inflight) await this.runner.wait(inflight.job_id);
             const run = this.evalRun(input.run_id) as EvalRun;
             const cov = this.latestCoverageRun(input.golden_version);
-            const gate = evaluateGate({ run, coverage: cov ? cov.coverage : null, evaluated_at: nowIso() });
+            const baseline = run.baseline_run_id ? this.evalRun(run.baseline_run_id) : undefined;
+            const gate = evaluateGate({ run, coverage: cov ? cov.coverage : null, evaluated_at: nowIso(), ...(baseline ? { baseline_label: `${baseline.release_tag} on ${baseline.golden_version}` } : {}) });
             this.db.prepare("INSERT OR REPLACE INTO gates(run_id,status,checks,evaluated_at,coverage) VALUES (?,?,?,?,?)").run(gate.run_id, gate.status, JSON.stringify(gate.checks), gate.evaluated_at, cov ? cov.coverage : null);
             note(`${gate.status}: ${gate.checks.filter((c) => !c.pass).map((c) => c.name).join(", ") || "all checks pass"}`);
             this.bus.emit("gate", gate);
