@@ -290,7 +290,8 @@ docker run -p 4040:4040 -v blindspot-data:/data blindspot
 
 That image runs as-is on Azure Container Apps or App Service for Containers (set `PORT` if the
 platform assigns one, `BLINDSPOT_DB` to a mounted path, and the `AZURE_OPENAI_*` variables to
-turn on the real embedder and judge). `.github/workflows/ci.yml` runs the typecheck, the tests
+turn on the real embedder and judge). The Dockerfile mirrors the npm commands above; it was
+written on a machine without Docker, so build it once before relying on it. `.github/workflows/ci.yml` runs the typecheck, the tests
 and `npm run story`, so the release gate's exit code is what makes the build green.
 
 ## Testing
