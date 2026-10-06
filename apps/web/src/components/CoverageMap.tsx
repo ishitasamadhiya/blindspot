@@ -36,6 +36,7 @@ export const CoverageMap: React.FC<{
     const golden = points.filter((p) => p.kind === "golden");
     const covered = points.filter((p) => p.kind === "covered");
     const uncovered = points.filter((p) => p.kind === "uncovered");
+    const neighbourhood = roundedPath(expandHull(convexHull([...golden, ...covered].map((p) => [sx(p.x), sy(p.y)] as Pt)), 16));
     const hulls = blindSpots.map((b) => {
       const members = points.filter((p) => p.cluster_id === b.cluster_id).map((p) => [sx(p.x), sy(p.y)] as Pt);
       const hull = expandHull(convexHull(members), 14);
@@ -43,10 +44,10 @@ export const CoverageMap: React.FC<{
       const cy = members.reduce((s, p) => s + p[1], 0) / Math.max(1, members.length);
       return { spot: b, path: roundedPath(hull), cx, cy, n: members.length };
     });
-    return { sx, sy, golden, covered, uncovered, hulls };
+    return { sx, sy, golden, covered, uncovered, hulls, neighbourhood };
   }, [points, blindSpots, width, height]);
   if (!layout) return <div className="empty">No coverage run yet.</div>;
-  const { sx, sy, golden, covered, uncovered, hulls } = layout;
+  const { sx, sy, golden, covered, uncovered, hulls, neighbourhood } = layout;
   const take = <T,>(arr: T[], frac: number) => arr.slice(0, Math.ceil(arr.length * frac));
   const goldenReveal = Math.min(1, reveal * 3);
   const coveredReveal = Math.min(1, Math.max(0, reveal * 3 - 1));
@@ -55,6 +56,7 @@ export const CoverageMap: React.FC<{
     <div className="map-wrap">
       <svg className="map" viewBox={`0 0 ${width} ${height}`} width="100%" role="img" aria-label="Traffic map: golden set versus last seven days of production traffic" onClick={() => onSelect?.(null)}>
         <rect x={0} y={0} width={width} height={height} rx={8} fill="var(--surface-2)" stroke="var(--border)" />
+        {goldenReveal > 0.5 && neighbourhood ? <path d={neighbourhood} fill="var(--golden)" fillOpacity={0.07 * Math.min(1, (goldenReveal - 0.5) * 2)} stroke="var(--golden)" strokeOpacity={0.5} strokeDasharray="5 4" strokeWidth={1.2} /> : null}
         {take(golden, goldenReveal).map((p) => (
           <circle key={p.id} cx={sx(p.x)} cy={sy(p.y)} r={2.6} fill="var(--golden)" opacity={dim ? 0.35 : 0.75} />
         ))}
@@ -115,7 +117,7 @@ export const CoverageMap: React.FC<{
         <span>
           <span className="dot" style={{ background: "var(--uncovered)" }} /> uncovered traffic ({uncovered.length})
         </span>
-        <span className="faint">2-D PCA of claim embeddings; hulls are blind spots</span>
+        <span className="faint">cluster-aware projection of claim embeddings; dashed = the golden set's neighbourhood, solid hulls = blind spots</span>
       </div>
     </div>
   );

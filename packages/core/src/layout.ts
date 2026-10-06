@@ -1,3 +1,4 @@
+import { mulberry32 } from "./prng.js";
 import { pca2d, type Vec } from "./vector.js";
 
 export interface LayoutGroup {
@@ -60,6 +61,7 @@ export function layoutMap(vectors: Vec[], groups: LayoutGroup[], seed = 7): Arra
       c[1] = Math.min(0.92, Math.max(0.08, c[1]));
     }
   }
+  const rng = mulberry32(seed);
   nonEmpty.forEach((g, gi) => {
     const local = g.indices.length >= 3 ? pca2d(g.indices.map((i) => vectors[i] as Vec), seed + gi) : g.indices.map((_, j) => [j * 0.3, 0] as [number, number]);
     const maxNorm = Math.max(1e-6, ...local.map(([x, y]) => Math.hypot(x, y)));
@@ -67,7 +69,10 @@ export function layoutMap(vectors: Vec[], groups: LayoutGroup[], seed = 7): Arra
     const [cx, cy] = centers[gi] as [number, number];
     g.indices.forEach((i, j) => {
       const [lx, ly] = local[j] as [number, number];
-      out[i] = [cx + (lx / maxNorm) * r, cy + (ly / maxNorm) * r];
+      // identical claims share a coordinate; a small seeded jitter keeps them from stacking into a line
+      const angle = rng() * Math.PI * 2;
+      const jitter = Math.sqrt(rng()) * r * 0.14;
+      out[i] = [cx + (lx / maxNorm) * r * 0.86 + Math.cos(angle) * jitter, cy + (ly / maxNorm) * r * 0.86 + Math.sin(angle) * jitter];
     });
   });
   return out;

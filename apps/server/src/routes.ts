@@ -18,7 +18,7 @@ export function registerRoutes(app: FastifyInstance, svc: Services, runner: JobR
     });
     reply.raw.write(`event: hello\ndata: ${JSON.stringify({ at: new Date().toISOString() })}\n\n`);
     const unsubscribe = bus.subscribe(reply);
-    const ping = setInterval(() => reply.raw.write(": ping\n\n"), 15000);
+    const ping = setInterval(() => reply.raw.write(`event: ping\ndata: ${JSON.stringify({ at: new Date().toISOString() })}\n\n`), 15000);
     req.raw.on("close", () => {
       clearInterval(ping);
       unsubscribe();
