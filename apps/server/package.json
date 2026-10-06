@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/main.ts",
+    "dev": "tsx watch src/main.ts --port 4040",
     "start": "tsx src/main.ts",
     "seed": "tsx src/cli.ts seed",
     "demo": "tsx src/cli.ts demo",

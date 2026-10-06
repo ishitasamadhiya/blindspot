@@ -12,4 +12,5 @@ export * from "./judge.js";
 export * from "./gate.js";
 export * from "./golden.js";
 export * from "./seed.js";
+export * from "./layout.js";
 export * from "./pipeline.js";

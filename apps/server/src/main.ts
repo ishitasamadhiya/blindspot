@@ -1,6 +1,7 @@
 import { buildApp, createContext } from "./app.js";
 
-const port = Number(process.env.PORT ?? 4040);
+const portFlag = process.argv.indexOf("--port");
+const port = Number(portFlag >= 0 ? process.argv[portFlag + 1] : process.env.BLINDSPOT_PORT ?? process.env.PORT ?? 4040);
 const dbPath = process.env.BLINDSPOT_DB ?? "./data/blindspot.sqlite";
 
 const ctx = createContext(dbPath);

@@ -6,7 +6,8 @@ import { casePasses } from "./golden.js";
 import type { Judge, JudgeVerdict } from "./judge.js";
 import { selectRepresentatives, type Selection } from "./select.js";
 import { bootstrapMeanCI, pairedBootstrapCI } from "./stats.js";
-import { pca2d, type Vec } from "./vector.js";
+import { type Vec } from "./vector.js";
+import { layoutMap } from "./layout.js";
 import type { BlindSpot, CaseResult, EvalMetrics, EvalRun, GoldenCase, MapPoint, SegmentMetric, Trace } from "./types.js";
 
 export interface CoverageAnalysis {
@@ -126,7 +127,11 @@ export async function analyzeCoverage(input: {
   }
 
   const allVecs = [...goldenVecs, ...traceVecs];
-  const coords = pca2d(allVecs, seed);
+  const groups = [{ key: "golden", indices: [...goldenVecs.map((_, i) => i), ...windowTraces.map((t, i) => ((hitById.get(t.trace_id) as { covered: boolean }).covered ? goldenVecs.length + i : -1)).filter((i) => i >= 0)] }];
+  for (const b of blind_spots) groups.push({ key: b.cluster_id, indices: b.trace_ids.map((id) => goldenVecs.length + windowTraces.findIndex((t) => t.trace_id === id)) });
+  const placed = new Set(groups.flatMap((g) => g.indices));
+  groups.push({ key: "tail", indices: allVecs.map((_, i) => i).filter((i) => !placed.has(i)) });
+  const coords = layoutMap(allVecs, groups, seed);
   const map: MapPoint[] = [];
   input.golden.forEach((g, i) => map.push({ id: g.case_id, kind: "golden", x: (coords[i] as [number, number])[0], y: (coords[i] as [number, number])[1] }));
   windowTraces.forEach((t, i) => {

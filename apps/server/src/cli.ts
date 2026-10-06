@@ -44,13 +44,13 @@ if (command === "seed") {
     console.log(`seeded: ${r.golden} golden cases, ${r.traces} traces, ${r.pending} held for replay`);
   }
   ctx.runner.resumeIncomplete();
-  const port = Number(process.env.PORT ?? 4040);
+  const port = Number(flags.get("port") ?? process.env.BLINDSPOT_PORT ?? process.env.PORT ?? 4040);
   const app = await buildApp(ctx);
   await app.listen({ port, host: "0.0.0.0" });
   console.log(`\nBlindspot demo: http://localhost:${port}\n  1. Replay 7 days of traffic   2. Run coverage   3. Harvest + grade   4. Commit golden v2   5. Evaluate a release\n`);
 } else if (command === "story") {
   const ctx = createContext(dbPath);
-  ctx.svc.seedDemo({ days: 7 });
+  ctx.svc.seedDemo({ days: 7, baseline: false });
   console.log("\nBLINDSPOT — Contoso Foods deduction-claim validator\n");
   console.log("1. Baseline: golden v1, release/1.3");
   const base = await waitJob(ctx, ctx.svc.startEval({ golden_version: "v1", agent_version: "1.3.0" }), true);

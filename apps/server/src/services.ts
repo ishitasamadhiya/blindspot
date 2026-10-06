@@ -18,8 +18,8 @@ import {
   generateSeed,
   hasFailureSignal,
   newContext,
+  layoutMap,
   pairedBootstrapCI,
-  pca2d,
   selectRepresentatives,
   toFoundryRows,
   type BlindSpot,
@@ -67,6 +67,7 @@ export interface CoverageAnalysisStored {
   selections: Record<string, Selection>;
   value_at_risk_total: number;
   trace_count: number;
+  long_tail?: { clusters: number; traces: number; value: number; floor: number };
 }
 
 export interface GradingItem {
@@ -129,7 +130,7 @@ export class Services {
     return !!getMeta(this.db, "seed");
   }
 
-  seedDemo(opts: { days?: number; seed?: number } = {}): { golden: number; traces: number; pending: number } {
+  seedDemo(opts: { days?: number; seed?: number; baseline?: boolean } = {}): { golden: number; traces: number; pending: number } {
     const days = opts.days ?? 7;
     const data = generateSeed(opts.seed ?? 42);
     resetDb(this.db);
@@ -167,6 +168,10 @@ export class Services {
     setMeta(this.db, "current_golden_version", "v1");
     setMeta(this.db, "engagement", JSON.stringify(ENGAGEMENT));
     this.bus.emit("seeded", { golden: data.golden.length, traces: ingested, pending });
+    if (opts.baseline !== false) {
+      this.startEval({ golden_version: "v1", agent_version: "1.3.0" });
+      this.startCoverage({ window_days: 7, golden_version: "v1" });
+    }
     return { golden: data.golden.length, traces: ingested, pending };
   }
 
@@ -560,7 +565,7 @@ export class Services {
       engagement: engagement ? JSON.parse(engagement) : ENGAGEMENT,
       golden: { current, versions },
       eval: latestEvalForCurrent ? summarizeRun(latestEvalForCurrent, this.gate(latestEvalForCurrent.run_id)) : latestEval ? summarizeRun(latestEval, this.gate(latestEval.run_id)) : null,
-      coverage: coverage ? { ...coverage, analysis: undefined, blind_spots: coverage.analysis.blind_spots.slice(0, 5).map(({ trace_ids: _ids, ...b }) => b), value_at_risk_total: coverage.analysis.value_at_risk_total, traces_since: since } : null,
+      coverage: coverage ? { ...coverage, analysis: undefined, blind_spots: coverage.analysis.blind_spots.slice(0, 5).map(({ trace_ids: _ids, ...b }) => b), value_at_risk_total: coverage.analysis.value_at_risk_total, long_tail: coverage.analysis.long_tail ?? null, traces_since: since } : null,
       traffic: { total: traceCount, latest: this.latestTraceAt(), daily: this.dailyStats(), replay: this.pendingReplay() },
       grading: this.agreement(),
       jobs: this.runner.list().slice(0, 8),
@@ -656,14 +661,17 @@ export class Services {
                 });
               }
             }
-            spots.sort((a, b) => b.score - a.score);
-            spots.forEach((s, i) => {
+            const floor = Math.max(12, Math.round(traceIds.length * 0.03));
+            const reported = spots.filter((s) => s.volume >= floor).sort((a, b) => b.score - a.score);
+            const tail = spots.filter((s) => s.volume < floor);
+            reported.forEach((s, i) => {
               s.cluster_id = `bs-${i + 1}`;
               for (const id of s.trace_ids) clusterOf[id] = s.cluster_id;
             });
-            checkpoint.blind_spots = spots;
+            checkpoint.blind_spots = reported;
             checkpoint.cluster_of = clusterOf;
-            note(spots.length ? `${spots.length} blind spots: ${spots.map((s) => `${s.name} (${s.volume})`).join("; ")}` : "no uncovered traffic to cluster");
+            checkpoint.long_tail = { clusters: tail.length, traces: tail.reduce((n, s) => n + s.volume, 0), value: tail.reduce((n, s) => n + s.value_at_risk, 0), floor };
+            note(reported.length ? `${reported.length} blind spots above the reporting floor (${floor} traces): ${reported.map((s) => `${s.name} (${s.volume})`).join("; ")}${tail.length ? `; ${tail.reduce((n, s) => n + s.volume, 0)} traces in ${tail.length} smaller clusters below the floor` : ""}` : `no cluster reaches the reporting floor of ${floor} traces (${uncovered.length} uncovered traces in the long tail)`);
           },
         },
         {
@@ -713,7 +721,17 @@ export class Services {
           run: ({ checkpoint, note }) => {
             const gv = (checkpoint.golden_vecs as string[]).map(b64ToVec);
             const tv = (checkpoint.trace_vecs as string[]).map(b64ToVec);
-            const coords = pca2d([...gv, ...tv], input.seed);
+            const hitsAll = checkpoint.hits as CoverageHit[];
+            const clusterMap = checkpoint.cluster_of as Record<string, string>;
+            const traceIdsAll = checkpoint.trace_ids as string[];
+            const groups = [{ key: "golden", indices: [...gv.map((_, i) => i), ...traceIdsAll.map((_, i) => ((hitsAll[i] as CoverageHit).covered ? gv.length + i : -1)).filter((i) => i >= 0)] }];
+            const spotsForLayout = checkpoint.blind_spots as BlindSpot[];
+            const indexOfTrace = new Map(traceIdsAll.map((id, i) => [id, gv.length + i]));
+            for (const b of spotsForLayout) groups.push({ key: b.cluster_id, indices: b.trace_ids.map((id) => indexOfTrace.get(id) as number) });
+            const placed = new Set(groups.flatMap((g) => g.indices));
+            groups.push({ key: "tail", indices: [...gv, ...tv].map((_, i) => i).filter((i) => !placed.has(i)) });
+            void clusterMap;
+            const coords = layoutMap([...gv, ...tv], groups, input.seed);
             const goldenIds = checkpoint.golden_ids as string[];
             const traceIds = checkpoint.trace_ids as string[];
             const hits = checkpoint.hits as CoverageHit[];
@@ -733,6 +751,7 @@ export class Services {
               selections: checkpoint.selections as Record<string, Selection>,
               value_at_risk_total: spots.reduce((s, b) => s + b.value_at_risk, 0),
               trace_count: traceIds.length,
+              long_tail: checkpoint.long_tail as CoverageAnalysisStored["long_tail"],
             };
             const runId = newId("cov");
             const covered = hits.filter((h) => h.covered).length;
