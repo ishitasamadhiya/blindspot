@@ -3,8 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "description": "Coverage-gated evaluation for deployed AI agents: find the production traffic your golden set has never seen, grade the few cases that matter, and block releases the eval cannot vouch for.",
-  "workspaces": ["packages/*", "apps/*", "video"],
-  "engines": { "node": ">=22.13" },
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "video"
+  ],
+  "engines": {
+    "node": ">=22.13"
+  },
   "scripts": {
     "dev": "concurrently -n server,web -c blue,magenta \"npm run dev -w apps/server\" \"npm run dev -w apps/web\"",
     "build": "npm run build -w packages/core && npm run build -w apps/web && npm run build -w apps/server",
@@ -12,12 +18,17 @@
     "test": "npm run test -w packages/core && npm run test -w apps/server",
     "typecheck": "npm run typecheck -w packages/core && npm run typecheck -w apps/server && npm run typecheck -w apps/web",
     "seed": "npm run seed -w apps/server",
-    "demo": "npm run demo -w apps/server",
+    "demo": "npm run build -w apps/web && npm run demo -w apps/server",
     "video:studio": "npm run studio -w video",
-    "video:render": "npm run render -w video"
+    "video:render": "npm run render -w video",
+    "story": "npm run story -w apps/server",
+    "gate": "npm run gate -w apps/server",
+    "screenshots": "node scripts/screenshots.mjs",
+    "video:tts": "bash video/scripts/tts.sh"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
+    "playwright-core": "^1.63.0",
     "typescript": "^5.7.3"
   }
 }

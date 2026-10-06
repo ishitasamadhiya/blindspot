@@ -9,5 +9,4 @@ out/
 data/*.sqlite
 data/*.sqlite-*
 video/out/
-video/public/audio/*.m4a
-video/public/audio/*.aiff
+video/public/audio/*.wav

@@ -1,0 +1,104 @@
+{
+ "hook": {
+  "index": 1,
+  "seconds": 8.98,
+  "file": "audio/hook.wav",
+  "text": "This claim was approved for the wrong amount. This eval says ninety-four percent, green. Both are true. If I joined Team Delta tomorrow, this is the first thing I'd fix."
+ },
+ "works": {
+  "index": 2,
+  "seconds": 5.62,
+  "file": "audio/works.wav",
+  "text": "What already works: a golden set, expert-graded, replayed on every release. CI for agents."
+ },
+ "signal": {
+  "index": 3,
+  "seconds": 4.94,
+  "file": "audio/signal.wav",
+  "text": "Three weeks in, Contoso's analysts override one decision in four. The eval never moved."
+ },
+ "hypothesis": {
+  "index": 4,
+  "seconds": 4.69,
+  "file": "audio/hypothesis.wav",
+  "text": "So, a different question: how much of this week's traffic has the eval actually seen?"
+ },
+ "measure": {
+  "index": 5,
+  "seconds": 4.79,
+  "file": "audio/measure.wav",
+  "text": "Embed every claim, calibrate on the golden set itself, measure. Fifty-four percent."
+ },
+ "move1": {
+  "index": 6,
+  "seconds": 9.9,
+  "file": "audio/move1.wav",
+  "text": "Move one: find what the eval has never seen. Uncovered claims cluster by content and name themselves: a new portal export, a new promo type, co-op claims without an invoice."
+ },
+ "move2": {
+  "index": 7,
+  "seconds": 8.66,
+  "file": "audio/move2.wav",
+  "text": "Move two: grade ten, not a thousand. Typical claims, random draws, and the cases the judge was unsure about. Judge agreement is measured per blind spot."
+ },
+ "move3": {
+  "index": 8,
+  "seconds": 8.67,
+  "file": "audio/move3.wav",
+  "text": "Move three: block the release. Coverage above eighty-five, no blind spot below eighty, no regression outside a paired-bootstrap interval. A CLI with an exit code."
+ },
+ "stack": {
+  "index": 9,
+  "seconds": 8.07,
+  "file": "audio/stack.wav",
+  "text": "TypeScript end to end: React, Node and SQLite with checkpointed jobs, REST plus live events, tested math, optional Azure OpenAI."
+ },
+ "before": {
+  "index": 10,
+  "seconds": 2.65,
+  "file": "audio/before.wav",
+  "text": "Before: green dashboard, unhappy customer."
+ },
+ "harvest": {
+  "index": 11,
+  "seconds": 3.05,
+  "file": "audio/harvest.wav",
+  "text": "After: thirty cases graded. Golden set v2."
+ },
+ "blocked": {
+  "index": 12,
+  "seconds": 6.09,
+  "file": "audio/blocked.wav",
+  "text": "Release one-three on v2: eighty-seven point seven, zero on the portal cluster. Blocked, with the reason named."
+ },
+ "fixed": {
+  "index": 13,
+  "seconds": 6.66,
+  "file": "audio/fixed.wav",
+  "text": "A ten-line parser patch. Release one-four: ninety-three point seven, plus six points, coverage ninety. Pass."
+ },
+ "control": {
+  "index": 14,
+  "seconds": 5.22,
+  "file": "audio/control.wav",
+  "text": "A control: the next release moves one point, the interval includes zero, the gate stays green."
+ },
+ "whyme": {
+  "index": 15,
+  "seconds": 7.97,
+  "file": "audio/whyme.wav",
+  "text": "I'm Ishita, EECS and Business at Berkeley M.E.T. I like finding messy product problems, figuring out what matters, and building the system that fixes them."
+ },
+ "proof": {
+  "index": 16,
+  "seconds": 13.07,
+  "file": "audio/proof.wav",
+  "text": "MIT CSAIL: evaluation design for RAG in production. FrontDesk: a customer problem, shipped and iterated. Valency: benchmarking on bootstrap intervals. Holographic Studio: a loved idea plus its missing layer."
+ },
+ "close": {
+  "index": 17,
+  "seconds": 6.47,
+  "file": "audio/close.wav",
+  "text": "We don't ship agents we can't measure. Blindspot keeps the measurement about this week. I'd love to build the next one with Team Delta."
+ }
+}
