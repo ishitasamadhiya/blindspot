@@ -322,17 +322,21 @@ run and the noise-versus-regression distinction.
 ## The video
 
 `video/` is a Remotion project whose scenes render the real React components with data recorded
-from `npm run story -- --snapshot video/src/data/snapshot.json`.
+from `npm run story -- --snapshot video/src/data/snapshot.json`. The voice-over is synthetic (a
+Microsoft neural voice through Edge TTS, `pip install edge-tts`; falls back to macOS `say`), and
+the sound design (clicks, whoosh, stamp, ping, riser, ambient bed) is synthesised from scratch by
+`video/scripts/sound.py`, so nothing in the video needs a licence.
 
 ```bash
-npm run video:tts            # scratch narration from docs/video/narration.md (macOS `say`) + timing.json
-npm run video:render         # video/out/blindspot-demo.mp4 (1080p, H.264, scratch voice-over)
+npm run video:tts            # narration clips from docs/video/narration.md + timing.json (ENGINE=say to use macOS voices)
+npm run video:sound          # sound effects and the ambient bed into video/public/audio/sfx/
+npm run video:render         # video/out/blindspot-demo.mp4 (1080p, H.264); DemoSilent has no narration
 npm run video:studio         # scrub scenes in the Remotion studio
 ```
 
 To use your own voice, record each line of `docs/video/narration.md` as
-`video/public/audio/<scene>.wav`, update `video/src/data/timing.json` with the clip lengths (or
-rerun `tts.sh` with the files in place), and render again.
+`video/public/audio/<scene>.wav`, update `video/src/data/timing.json` with the clip lengths, and
+render again; scene lengths follow the clips.
 
 ## Future improvements
 

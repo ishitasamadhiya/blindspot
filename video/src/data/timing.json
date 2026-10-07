@@ -1,104 +1,121 @@
 {
  "hook": {
   "index": 1,
-  "seconds": 9.32,
+  "seconds": 11.33,
   "file": "audio/hook.wav",
-  "text": "This claim was approved for the wrong amount. This eval says ninety-four percent, green. Both are true. If I joined Team Delta tomorrow, this is the first thing I'd want to fix."
+  "text": "Three weeks after go-live, Contoso's claim agent approved this claim for zero dollars. The eval said ninety-four percent, green. Both are true. If I joined Team Delta tomorrow, this is what I'd fix first.",
+  "voice": "en-US-AvaMultilingualNeural"
  },
  "works": {
   "index": 2,
-  "seconds": 5.62,
+  "seconds": 6.53,
   "file": "audio/works.wav",
-  "text": "What already works: a golden set, expert-graded, replayed on every release. CI for agents."
+  "text": "What already works: an expert-graded golden set, replayed on every release. CI for agents.",
+  "voice": "en-US-AvaMultilingualNeural"
  },
  "signal": {
   "index": 3,
-  "seconds": 4.94,
+  "seconds": 5.02,
   "file": "audio/signal.wav",
-  "text": "Three weeks in, Contoso's analysts override one decision in four. The eval never moved."
+  "text": "Then the customer's analysts start overriding one decision in four. The eval never moves.",
+  "voice": "en-US-AvaMultilingualNeural"
  },
  "hypothesis": {
   "index": 4,
-  "seconds": 4.69,
+  "seconds": 5.18,
   "file": "audio/hypothesis.wav",
-  "text": "So, a different question: how much of this week's traffic has the eval actually seen?"
+  "text": "So instead of asking if the agent is right: how much of this week's traffic has the eval actually seen?",
+  "voice": "en-US-AvaMultilingualNeural"
  },
  "measure": {
   "index": 5,
-  "seconds": 4.79,
+  "seconds": 5.35,
   "file": "audio/measure.wav",
-  "text": "Embed every claim, calibrate on the golden set itself, measure. Fifty-four percent."
+  "text": "Embed every claim, calibrate on the golden set itself, measure. Fifty-four percent.",
+  "voice": "en-US-AvaMultilingualNeural"
  },
  "move1": {
   "index": 6,
-  "seconds": 9.9,
+  "seconds": 10.82,
   "file": "audio/move1.wav",
-  "text": "Move one: find what the eval has never seen. Uncovered claims cluster by content and name themselves: a new portal export, a new promo type, co-op claims without an invoice."
+  "text": "Move one: find what the eval has never seen. Uncovered claims cluster by content and name themselves: a new portal export, a promo type from after discovery, co-op claims with no invoice.",
+  "voice": "en-US-AvaMultilingualNeural"
  },
  "move2": {
   "index": 7,
-  "seconds": 8.66,
+  "seconds": 11.28,
   "file": "audio/move2.wav",
-  "text": "Move two: grade ten, not a thousand. Typical claims, random draws, and the cases the judge was unsure about. Judge agreement is measured per blind spot."
+  "text": "Move two: grade ten, not a thousand. Typical claims, random draws, and the cases the judge was unsure about. Judge agreement is measured per blind spot: not validated here, not trusted here.",
+  "voice": "en-US-AvaMultilingualNeural"
  },
  "move3": {
   "index": 8,
-  "seconds": 8.67,
+  "seconds": 10.97,
   "file": "audio/move3.wav",
-  "text": "Move three: block the release. Coverage above eighty-five, no blind spot below eighty, no regression outside a paired-bootstrap interval. A CLI with an exit code."
+  "text": "Move three: block the release. Coverage above eighty-five, no blind spot below eighty, no regression outside a bootstrap interval. One command, one exit code, straight into CI.",
+  "voice": "en-US-AvaMultilingualNeural"
  },
  "stack": {
   "index": 9,
-  "seconds": 8.07,
+  "seconds": 8.21,
   "file": "audio/stack.wav",
-  "text": "TypeScript end to end: React, Node and SQLite with checkpointed jobs, REST plus live events, tested math, optional Azure OpenAI."
+  "text": "TypeScript end to end: React, Node and SQLite with checkpointed jobs, REST plus live events, tested math, optional Azure OpenAI.",
+  "voice": "en-US-AvaMultilingualNeural"
  },
  "before": {
   "index": 10,
-  "seconds": 2.65,
+  "seconds": 3.31,
   "file": "audio/before.wav",
-  "text": "Before: green dashboard, unhappy customer."
+  "text": "Before: green dashboard, unhappy customer.",
+  "voice": "en-US-AvaMultilingualNeural"
  },
  "harvest": {
   "index": 11,
-  "seconds": 3.05,
+  "seconds": 4.42,
   "file": "audio/harvest.wav",
-  "text": "After: thirty cases graded. Golden set v2."
+  "text": "After: thirty cases graded in an afternoon. Golden set v2.",
+  "voice": "en-US-AvaMultilingualNeural"
  },
  "blocked": {
   "index": 12,
-  "seconds": 6.11,
+  "seconds": 6.53,
   "file": "audio/blocked.wav",
-  "text": "Release one-three on v2: eighty-seven point nine, zero on the portal cluster. Blocked, with the reason named."
+  "text": "Release one-three on v2: eighty-seven point nine, zero on the portal cluster. Blocked, reason named.",
+  "voice": "en-US-AvaMultilingualNeural"
  },
  "fixed": {
   "index": 13,
-  "seconds": 7.03,
+  "seconds": 7.97,
   "file": "audio/fixed.wav",
-  "text": "A fourteen-line parser patch. Release one-four: ninety-four point zero, plus six points, coverage above ninety. Pass."
+  "text": "A fourteen-line parser patch. Release one-four: ninety-four, plus six points, interval above zero, coverage above ninety. Pass.",
+  "voice": "en-US-AvaMultilingualNeural"
  },
  "control": {
   "index": 14,
-  "seconds": 5.22,
+  "seconds": 6.26,
   "file": "audio/control.wav",
-  "text": "A control: the next release moves one point, the interval includes zero, the gate stays green."
+  "text": "A control: the next release moves one point, the interval includes zero, the gate stays green. No crying wolf.",
+  "voice": "en-US-AvaMultilingualNeural"
  },
  "whyme": {
   "index": 15,
-  "seconds": 7.97,
+  "seconds": 8.38,
   "file": "audio/whyme.wav",
-  "text": "I'm Ishita, EECS and Business at Berkeley M.E.T. I like finding messy product problems, figuring out what matters, and building the system that fixes them."
+  "text": "I'm Ishita, EECS and Business at Berkeley M.E.T. I like finding messy product problems, figuring out what matters, and building the system that fixes them.",
+  "voice": "en-US-AvaMultilingualNeural"
  },
  "proof": {
   "index": 16,
-  "seconds": 14.93,
+  "seconds": 15.1,
   "file": "audio/proof.wav",
-  "text": "MIT CSAIL: evaluation design for RAG in production. FrontDesk: a customer problem taken from interviews to a shipped pipeline. Valency: benchmarking on bootstrap intervals. Holographic Studio: an idea that already worked, plus its missing layer."
+  "text": "MIT CSAIL: evaluation design for RAG in production. FrontDesk: a customer problem, from interviews to a shipped pipeline. Valency: benchmarking on bootstrap intervals. Holographic Studio: an idea that worked, plus its missing layer.",
+  "voice": "en-US-AvaMultilingualNeural"
  },
  "close": {
   "index": 17,
-  "seconds": 6.47,
+  "seconds": 6.72,
   "file": "audio/close.wav",
-  "text": "We don't ship agents we can't measure. Blindspot keeps the measurement about this week. I'd love to build the next one with Team Delta."
+  "text": "We don't ship agents we can't measure. Blindspot keeps the measurement about this week. I'd love to build the next one with Team Delta.",
+  "voice": "en-US-AvaMultilingualNeural"
  }
 }

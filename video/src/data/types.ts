@@ -14,6 +14,7 @@ export interface Snapshot {
   coverage_v1: { coverage: number; threshold: number; covered: number; total: number; window_start: string; window_end: string; analysis: { blind_spots: BlindSpot[]; map: MapPoint[]; value_at_risk_total: number; trace_count: number } };
   coverage_v2: { coverage: number; analysis: { blind_spots: BlindSpot[] } };
   blind_spots: Array<BlindSpot & { medoid: Trace; examples: Trace[] }>;
+  ticker: Trace[];
   golden_example: GoldenCase;
   grading: Array<{ item_id: string; cluster_id: string; cluster_name: string; trace_id: string; role: string; status: "pending" | "graded"; judge: { pass: boolean; confidence: number; rationale: string; judge: string } | null; expert: { decision: "APPROVE" | "REJECT" | "ESCALATE"; amount: number; note: string; grader: string; graded_at: string } | null; trace?: Trace }>;
   agreement: Array<{ cluster_id: string; cluster_name: string; graded: number; pending: number; agreement: number | null; kappa: number | null; mean_judge_confidence: number | null; expert_pass_rate: number | null }>;

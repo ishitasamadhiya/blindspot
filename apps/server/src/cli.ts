@@ -107,6 +107,15 @@ if (command === "seed") {
       coverage_v1: { ...covV1Full, analysis: { ...covV1Full.analysis, verdicts: undefined, hits: undefined } },
       coverage_v2: { ...covV2Full, analysis: { ...covV2Full.analysis, verdicts: undefined, hits: undefined, map: undefined } },
       blind_spots: covV1Full.analysis.blind_spots.map((b) => ({ ...b, medoid: ctx.svc.trace(b.medoid_trace_id), examples: b.trace_ids.slice(0, 3).map((id) => ctx.svc.trace(id)) })),
+      ticker: (() => {
+        const medoid = ctx.svc.trace(covV1Full.analysis.blind_spots[0]?.medoid_trace_id ?? "");
+        const covered = new Set(covV1Full.analysis.hits.filter((h) => h.covered).map((h) => h.trace_id));
+        return ctx.svc
+          .traces({ until: medoid?.received_at ?? "9999", limit: 400 })
+          .filter((t) => covered.has(t.trace_id) && (t.output.amount > 0 || t.output.decision === "REJECT"))
+          .slice(0, 9)
+          .reverse();
+      })(),
       golden_example: ctx.svc.goldenCases("v1")[0],
       grading: queue,
       agreement: ctx.svc.agreement(),

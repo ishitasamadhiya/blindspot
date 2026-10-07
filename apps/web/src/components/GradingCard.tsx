@@ -23,7 +23,7 @@ export const GradingCard: React.FC<{
   onSkip?: () => void;
   highlight?: string[];
   busy?: boolean;
-  prefill?: { decision: Decision; amount: number } | null;
+  prefill?: { decision: Decision; amount: number | string } | null;
 }> = ({ item, index, total, onGrade, onSkip, highlight = [], busy = false, prefill = null }) => {
   const [decision, setDecision] = useState<Decision | null>(prefill?.decision ?? null);
   const [amount, setAmount] = useState<string>(prefill ? String(prefill.amount) : "");

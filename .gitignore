@@ -10,4 +10,5 @@ data/*.sqlite
 data/*.sqlite-*
 video/out/
 video/public/audio/*.wav
+video/public/audio/sfx/
 .claude/
