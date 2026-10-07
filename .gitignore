@@ -6,8 +6,8 @@ out/
 .env
 .env.*
 !.env.example
-data/*.sqlite
-data/*.sqlite-*
+**/data/*.sqlite
+**/data/*.sqlite-*
 video/out/
 video/public/audio/*.wav
 video/public/audio/sfx/
