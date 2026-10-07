@@ -21,6 +21,8 @@ const GAP = 0.35;
 
 type SceneKey = keyof typeof timing;
 const SCENES: Array<{ key: SceneKey; min: number; chapter: Chapter; render: (seconds: number) => React.ReactNode }> = [
+  { key: "whyme", min: 8, chapter: "Who I am", render: (s) => <WhyMe seconds={s} /> },
+  { key: "proof", min: 11, chapter: "Who I am", render: (s) => <Proof seconds={s} /> },
   { key: "hook", min: 10, chapter: "Noticed", render: (s) => <Hook seconds={s} snap={snap} /> },
   { key: "works", min: 6, chapter: "Noticed", render: (s) => <Works seconds={s} /> },
   { key: "signal", min: 5.5, chapter: "Investigated", render: (s) => <Signal seconds={s} snap={snap} /> },
@@ -35,9 +37,7 @@ const SCENES: Array<{ key: SceneKey; min: number; chapter: Chapter; render: (sec
   { key: "blocked", min: 6.5, chapter: "Shipped", render: (s) => <Blocked seconds={s} snap={snap} /> },
   { key: "fixed", min: 8, chapter: "Shipped", render: (s) => <Fixed seconds={s} snap={snap} /> },
   { key: "control", min: 6, chapter: "Shipped", render: (s) => <Control seconds={s} snap={snap} /> },
-  { key: "whyme", min: 7, chapter: "Why me", render: (s) => <WhyMe seconds={s} /> },
-  { key: "proof", min: 12, chapter: "Why me", render: (s) => <Proof seconds={s} /> },
-  { key: "close", min: 8, chapter: "Why me", render: (s) => <Close seconds={s} /> },
+  { key: "close", min: 8, chapter: "Shipped", render: (s) => <Close seconds={s} /> },
 ];
 
 export const plan = SCENES.map((s) => {

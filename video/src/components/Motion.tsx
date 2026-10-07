@@ -62,7 +62,7 @@ export const Sfx: React.FC<{ name: string; at: number; volume?: number }> = ({ n
   return <Audio src={staticFile(`audio/sfx/${name}.wav`)} volume={volume} startFrom={0} />;
 };
 
-const CHAPTERS = ["Noticed", "Investigated", "Built", "Shipped", "Why me"] as const;
+const CHAPTERS = ["Who I am", "Noticed", "Investigated", "Built", "Shipped"] as const;
 export type Chapter = (typeof CHAPTERS)[number];
 
 /** Thin progress strip at the bottom: which chapter of the story we are in. */

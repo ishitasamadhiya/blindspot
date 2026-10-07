@@ -29,7 +29,7 @@ export const Hook: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds, s
       <Sfx name="whoosh" at={tileIn} volume={0.3} />
       <Camera seconds={seconds} from={1} to={1.05} y={-10} origin="35% 45%">
         <Fade start={0.1} style={{ position: "absolute", left: 96, top: 110 }}>
-          <div style={{ fontSize: 15, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-3)", marginBottom: 10 }}>Contoso Foods · deduction-claim validator · live decisions · Oct 5</div>
+          <div style={{ fontSize: 15, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-3)", marginBottom: 10 }}>Here is one · Contoso Foods · deduction-claim validator · live decisions · Oct 5</div>
           <Ticker rows={feed} start={0.3} every={0.16} width={820} highlightLast />
         </Fade>
         <Fade start={freeze} style={{ position: "absolute", left: 96, top: 110, width: 820 }} y={0}>

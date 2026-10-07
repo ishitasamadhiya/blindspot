@@ -12,3 +12,4 @@ video/out/
 video/public/audio/*.wav
 video/public/audio/sfx/
 .claude/
+video/public/photo/

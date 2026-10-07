@@ -6,7 +6,7 @@ import { Patch } from "@web/components/Patch";
 import { VersionTimeline } from "@web/components/VersionTimeline";
 import { StatTile } from "@web/components/StatTile";
 import { clusterColor } from "@web/components/CoverageMap";
-import { Caption, Eyebrow, Fade, Kinetic, Logo, Scene, Window } from "../components/Primitives";
+import { Caption, Eyebrow, Fade, Kinetic, Logo, Scene, Shot, Window } from "../components/Primitives";
 import { Camera, Counter, Sfx, Stamp } from "../components/Motion";
 import { ramp, useT } from "../lib/anim";
 import type { Snapshot } from "../data/types";
@@ -258,22 +258,40 @@ export const Control: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds
   );
 };
 
-export const WhyMe: React.FC<{ seconds: number }> = ({ seconds }) => (
-  <Scene seconds={seconds} grid={false}>
-    <Sfx name="whoosh" at={0.2} volume={0.25} />
-    <Camera seconds={seconds} from={1} to={1.05} origin="30% 50%">
-      <div style={{ position: "absolute", left: 160, top: 330, maxWidth: 1560 }}>
-        <Kinetic text="I'm Ishita Samadhiya." start={0.2} size={84} />
-        <Fade start={1.3} style={{ fontSize: 34, color: "var(--text-2)", marginTop: 14 }}>
-          EECS + Business · Berkeley M.E.T.
-        </Fade>
-        <div style={{ marginTop: 44 }}>
-          <Kinetic text="I like finding messy product problems, figuring out what actually matters, and building the system that fixes them." start={2.6} size={46} color="var(--text)" perWord={0.05} />
+export const WhyMe: React.FC<{ seconds: number }> = ({ seconds }) => {
+  const t = useT();
+  const photo = ramp(t, 0.15, 0.7);
+  return (
+    <Scene seconds={seconds} grid={false}>
+      <Sfx name="whoosh" at={0.1} volume={0.25} />
+      <Sfx name="click" at={1.0} volume={0.3} />
+      <Camera seconds={seconds} from={1.03} to={1} origin="35% 50%">
+        <div style={{ position: "absolute", left: 160, top: 300, width: 400, height: 400, opacity: photo, transform: `scale(${0.92 + photo * 0.08})` }}>
+          <div style={{ position: "absolute", inset: -14, borderRadius: "50%", border: "2px solid var(--accent)", opacity: 0.5 }} />
+          <div style={{ position: "absolute", inset: -30, borderRadius: "50%", border: "1px solid var(--border-strong)", opacity: 0.6 }} />
+          <div style={{ width: 400, height: 400, borderRadius: "50%", overflow: "hidden", boxShadow: "0 30px 80px rgba(0,0,0,0.6)" }}>
+            <Shot file="photo/headshot.jpeg" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          </div>
+          <div style={{ position: "absolute", right: -18, bottom: 22, background: "var(--surface)", border: "1px solid var(--border-strong)", borderRadius: 999, padding: "6px 12px", display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text-2)" }}>
+            <Logo size={22} /> Blindspot
+          </div>
         </div>
-      </div>
-    </Camera>
-  </Scene>
-);
+        <div style={{ position: "absolute", left: 660, top: 300, maxWidth: 1180 }}>
+          <Eyebrow start={0.4}>Who I am</Eyebrow>
+          <div style={{ marginTop: 10 }}>
+            <Kinetic text="I'm Ishita Samadhiya." start={0.5} size={80} />
+          </div>
+          <Fade start={1.6} style={{ fontSize: 32, color: "var(--text-2)", marginTop: 12 }}>
+            EECS + Business · Berkeley M.E.T. · Class of 2028
+          </Fade>
+          <div style={{ marginTop: 40 }}>
+            <Kinetic text="I like finding messy product problems, figuring out what actually matters, and building the system that fixes them." start={2.9} size={42} color="var(--text)" perWord={0.045} />
+          </div>
+        </div>
+      </Camera>
+    </Scene>
+  );
+};
 
 const PROOF: Array<{ where: string; what: string; pinned: string }> = [
   { where: "MIT CSAIL", what: "owned retrieval + evaluation design for RAG across 12 health domains in production", pinned: "evaluation design and monitoring are things I already own" },
@@ -281,21 +299,21 @@ const PROOF: Array<{ where: string; what: string; pinned: string }> = [
   { where: "Valency", what: "a 25-experiment benchmarking program with paired-bootstrap CIs and LLM-as-judge", pinned: "the interval on the score is my code" },
   { where: "Holographic Studio", what: "a vocal-cover recorder where hand gestures drive autotune, echo and volume, exported as one synced MP4", pinned: "existing idea → missing layer" },
   { where: "Founder", what: "Skinsnap, zero to 10,000+ users, acquired", pinned: "what “the customer says it's broken” costs" },
-  { where: "Microsoft Delta", what: "where I would like to build the next one", pinned: "" },
+  { where: "Microsoft Delta", what: "here is the problem I would want to fix first", pinned: "" },
 ];
 
 export const Proof: React.FC<{ seconds: number }> = ({ seconds }) => (
   <Scene seconds={seconds}>
     {PROOF.map((_, i) => (
-      <Sfx key={i} name="click" at={0.3 + i * 1.9} volume={0.3} />
+      <Sfx key={i} name="click" at={0.3 + i * 1.6} volume={0.3} />
     ))}
     <Camera seconds={seconds} from={1} to={1.03} origin="50% 40%">
       <div className="lower">
-        <Eyebrow start={0.1}>Why me</Eyebrow>
+        <Eyebrow start={0.1}>What I have built</Eyebrow>
       </div>
       <div style={{ position: "absolute", left: 96, top: 180, width: 1744 }} className="card-stack">
         {PROOF.map((p, i) => (
-          <Fade key={p.where} start={0.3 + i * 1.9} y={16}>
+          <Fade key={p.where} start={0.3 + i * 1.6} y={16}>
             <div className="proofcard" style={p.where === "Microsoft Delta" ? { borderColor: "var(--accent)" } : undefined}>
               <span className="where">{p.where}</span>
               <span>

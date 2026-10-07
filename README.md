@@ -338,6 +338,9 @@ To use your own voice, record each line of `docs/video/narration.md` as
 `video/public/audio/<scene>.wav`, update `video/src/data/timing.json` with the clip lengths, and
 render again; scene lengths follow the clips.
 
+The opening scene shows a headshot read from `video/public/photo/headshot.jpeg`; that folder is
+git-ignored, so drop your own photo there before rendering.
+
 ## Future improvements
 
 - **Foundry integration.** Read traces from Application Insights through the Foundry SDK and write

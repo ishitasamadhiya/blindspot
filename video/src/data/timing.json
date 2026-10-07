@@ -1,114 +1,114 @@
 {
- "hook": {
+ "whyme": {
   "index": 1,
-  "seconds": 11.33,
+  "seconds": 9.5,
+  "file": "audio/whyme.wav",
+  "text": "I'm Ishita Samadhiya, EECS and Business at Berkeley M.E.T. I like finding messy product problems, figuring out what actually matters, and building the system that fixes them.",
+  "voice": "en-US-AvaMultilingualNeural"
+ },
+ "proof": {
+  "index": 2,
+  "seconds": 15.67,
+  "file": "audio/proof.wav",
+  "text": "At MIT CSAIL, evaluation design for RAG in production. At FrontDesk, a customer problem taken from interviews to a shipped pipeline. At Valency, benchmarking on bootstrap intervals. And Holographic Studio: an idea that already worked, plus its missing layer.",
+  "voice": "en-US-AvaMultilingualNeural"
+ },
+ "hook": {
+  "index": 3,
+  "seconds": 12.26,
   "file": "audio/hook.wav",
-  "text": "Three weeks after go-live, Contoso's claim agent approved this claim for zero dollars. The eval said ninety-four percent, green. Both are true. If I joined Team Delta tomorrow, this is what I'd fix first.",
+  "text": "Here's one. Three weeks after go-live, Contoso's claim agent approved this claim for zero dollars. The eval said ninety-four percent, green. Both are true. If I joined Team Delta tomorrow, this is what I'd fix first.",
   "voice": "en-US-AvaMultilingualNeural"
  },
  "works": {
-  "index": 2,
+  "index": 4,
   "seconds": 6.53,
   "file": "audio/works.wav",
   "text": "What already works: an expert-graded golden set, replayed on every release. CI for agents.",
   "voice": "en-US-AvaMultilingualNeural"
  },
  "signal": {
-  "index": 3,
+  "index": 5,
   "seconds": 5.02,
   "file": "audio/signal.wav",
   "text": "Then the customer's analysts start overriding one decision in four. The eval never moves.",
   "voice": "en-US-AvaMultilingualNeural"
  },
  "hypothesis": {
-  "index": 4,
+  "index": 6,
   "seconds": 5.18,
   "file": "audio/hypothesis.wav",
   "text": "So instead of asking if the agent is right: how much of this week's traffic has the eval actually seen?",
   "voice": "en-US-AvaMultilingualNeural"
  },
  "measure": {
-  "index": 5,
+  "index": 7,
   "seconds": 5.35,
   "file": "audio/measure.wav",
   "text": "Embed every claim, calibrate on the golden set itself, measure. Fifty-four percent.",
   "voice": "en-US-AvaMultilingualNeural"
  },
  "move1": {
-  "index": 6,
+  "index": 8,
   "seconds": 10.82,
   "file": "audio/move1.wav",
   "text": "Move one: find what the eval has never seen. Uncovered claims cluster by content and name themselves: a new portal export, a promo type from after discovery, co-op claims with no invoice.",
   "voice": "en-US-AvaMultilingualNeural"
  },
  "move2": {
-  "index": 7,
+  "index": 9,
   "seconds": 11.28,
   "file": "audio/move2.wav",
   "text": "Move two: grade ten, not a thousand. Typical claims, random draws, and the cases the judge was unsure about. Judge agreement is measured per blind spot: not validated here, not trusted here.",
   "voice": "en-US-AvaMultilingualNeural"
  },
  "move3": {
-  "index": 8,
+  "index": 10,
   "seconds": 10.97,
   "file": "audio/move3.wav",
   "text": "Move three: block the release. Coverage above eighty-five, no blind spot below eighty, no regression outside a bootstrap interval. One command, one exit code, straight into CI.",
   "voice": "en-US-AvaMultilingualNeural"
  },
  "stack": {
-  "index": 9,
+  "index": 11,
   "seconds": 8.21,
   "file": "audio/stack.wav",
   "text": "TypeScript end to end: React, Node and SQLite with checkpointed jobs, REST plus live events, tested math, optional Azure OpenAI.",
   "voice": "en-US-AvaMultilingualNeural"
  },
  "before": {
-  "index": 10,
+  "index": 12,
   "seconds": 3.31,
   "file": "audio/before.wav",
   "text": "Before: green dashboard, unhappy customer.",
   "voice": "en-US-AvaMultilingualNeural"
  },
  "harvest": {
-  "index": 11,
+  "index": 13,
   "seconds": 4.42,
   "file": "audio/harvest.wav",
   "text": "After: thirty cases graded in an afternoon. Golden set v2.",
   "voice": "en-US-AvaMultilingualNeural"
  },
  "blocked": {
-  "index": 12,
+  "index": 14,
   "seconds": 6.53,
   "file": "audio/blocked.wav",
   "text": "Release one-three on v2: eighty-seven point nine, zero on the portal cluster. Blocked, reason named.",
   "voice": "en-US-AvaMultilingualNeural"
  },
  "fixed": {
-  "index": 13,
+  "index": 15,
   "seconds": 7.97,
   "file": "audio/fixed.wav",
   "text": "A fourteen-line parser patch. Release one-four: ninety-four, plus six points, interval above zero, coverage above ninety. Pass.",
   "voice": "en-US-AvaMultilingualNeural"
  },
  "control": {
-  "index": 14,
+  "index": 16,
   "seconds": 6.26,
   "file": "audio/control.wav",
   "text": "A control: the next release moves one point, the interval includes zero, the gate stays green. No crying wolf.",
-  "voice": "en-US-AvaMultilingualNeural"
- },
- "whyme": {
-  "index": 15,
-  "seconds": 8.38,
-  "file": "audio/whyme.wav",
-  "text": "I'm Ishita, EECS and Business at Berkeley M.E.T. I like finding messy product problems, figuring out what matters, and building the system that fixes them.",
-  "voice": "en-US-AvaMultilingualNeural"
- },
- "proof": {
-  "index": 16,
-  "seconds": 15.1,
-  "file": "audio/proof.wav",
-  "text": "MIT CSAIL: evaluation design for RAG in production. FrontDesk: a customer problem, from interviews to a shipped pipeline. Valency: benchmarking on bootstrap intervals. Holographic Studio: an idea that worked, plus its missing layer.",
   "voice": "en-US-AvaMultilingualNeural"
  },
  "close": {
