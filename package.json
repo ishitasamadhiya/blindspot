@@ -25,8 +25,7 @@
     "gate": "npm run gate -w apps/server --",
     "screenshots": "node scripts/screenshots.mjs",
     "video:tts": "bash video/scripts/tts.sh",
-    "video:sound": "python3 video/scripts/sound.py",
-    "video:face": "python3 video/scripts/face.py"
+    "video:sound": "python3 video/scripts/sound.py"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",

@@ -8,6 +8,7 @@ import timing from "./data/timing.json";
 import snapshotJson from "./data/snapshot.json";
 import type { Snapshot } from "./data/types";
 import { ChapterBar } from "./components/Motion";
+import { fadeOut } from "./lib/anim";
 import { AvatarOverlay, type AvatarCue, type AvatarMode } from "./scenes/AvatarOverlay";
 import { Csail, FrontDesk, Hi, Holo, How, Valency } from "./scenes/About";
 import { Coverage, Moves, Notice, Result } from "./scenes/Pitch";
@@ -93,7 +94,12 @@ const Chapters: React.FC<{ scenes: Planned[]; chapters: readonly string[] }> = (
   const scene = scenes.find((s) => frame >= s.from && frame < s.from + s.frames) ?? scenes[scenes.length - 1]!;
   const span = chapterSpan(scenes, scene.chapter);
   const progress = Math.max(0, Math.min(1, (frame - span.start) / Math.max(1, span.end - span.start)));
-  return <ChapterBar chapters={chapters} chapter={scene.chapter} progress={progress} />;
+  const total = scenes.reduce((n, s) => n + s.frames, 0);
+  return (
+    <div style={{ opacity: fadeOut(frame / FPS, total / FPS, 0.3) }}>
+      <ChapterBar chapters={chapters} chapter={scene.chapter} progress={progress} />
+    </div>
+  );
 };
 
 const Film: React.FC<{ scenes: Planned[]; chapters: readonly string[]; withAudio: boolean }> = ({ scenes, chapters, withAudio }) => (

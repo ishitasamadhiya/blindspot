@@ -1,7 +1,7 @@
 import React from "react";
 import { ClaimJson } from "@web/components/ClaimJson";
 import { CoverageMap, clusterColor } from "@web/components/CoverageMap";
-import { Eyebrow, Fade, Kinetic, Logo, Scene, Window } from "../components/Primitives";
+import { Eyebrow, Fade, Kinetic, Scene, Shot, Window } from "../components/Primitives";
 import { Camera, Counter, ScanLine, Sfx, Stamp, Ticker } from "../components/Motion";
 import { ramp, useT } from "../lib/anim";
 import type { Snapshot } from "../data/types";
@@ -34,12 +34,12 @@ export const Notice: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds,
         </Fade>
         <Fade start={freeze} style={{ position: "absolute", left: 96, top: 100, width: 820 }} y={0}>
           <Window title={`trace ${spot.medoid.trace_id} · Northwind Traders · agent 1.3.0`} width={820}>
-            <ClaimJson claim={spot.medoid.claim} maxHeight={360} style={{ fontSize: 15 }} highlight={["line_items", "export_version"]} />
+            <ClaimJson claim={spot.medoid.claim} maxHeight={400} style={{ fontSize: 15 }} highlight={["line_items", "export_version"]} />
           </Window>
         </Fade>
-        <div style={{ position: "absolute", left: 440, top: 560 }}>
+        <div style={{ position: "absolute", left: 440, top: 600 }}>
           <Stamp at={freeze + 0.9} color="var(--danger)">APPROVED · $0.00</Stamp>
-          <Fade start={freeze + 1.3} style={{ color: "var(--text-2)", fontSize: 22, marginTop: 10, textAlign: "center" }}>
+          <Fade start={freeze + 1.3} out={6.1} style={{ color: "var(--text-2)", fontSize: 22, marginTop: 10, textAlign: "center" }}>
             claimed ${claimed.toFixed(2)} across {claim.line_items?.length ?? 0} line items
           </Fade>
         </div>
@@ -55,7 +55,7 @@ export const Notice: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds,
           </div>
         </Window>
       </Fade>
-      <div style={{ position: "absolute", left: 900, top: 640, width: 900 }}>
+      <div style={{ position: "absolute", left: 1000, top: 760, width: 800 }}>
         <Kinetic text="Both were true." start={6.3} size={78} />
       </div>
     </Scene>
@@ -198,7 +198,9 @@ export const Result: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds,
         </div>
       </Fade>
       <Fade start={cardIn} className="endcard" style={{ top: 40 }}>
-        <Logo size={64} />
+        <div style={{ width: 150, height: 150, borderRadius: "50%", overflow: "hidden", marginBottom: 10 }}>
+          <Shot file="photo/headshot.jpeg" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+        </div>
         <div className="name">Ishita Samadhiya</div>
         <div className="sub">Berkeley M.E.T. · EECS + Business</div>
         <div className="sub" style={{ marginTop: 18, color: "var(--text)" }}>I'd love to build the next one with Team Delta.</div>

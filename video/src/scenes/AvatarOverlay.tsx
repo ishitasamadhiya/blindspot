@@ -1,19 +1,17 @@
-import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
-import { AbsoluteFill, continueRender, delayRender, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import React, { useMemo } from "react";
+import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
 import { ThreeCanvas } from "@remotion/three";
 import * as THREE from "three";
-import faceJson from "../data/face.json";
-import { clamp01, lerp, ramp } from "../lib/anim";
+import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
+import { clamp01, fadeOut, lerp, ramp } from "../lib/anim";
 
 /**
- * The speaking avatar: the headshot with its background removed, laid over a depth relief built from
- * Apple Vision face landmarks (scripts/face.py), lit in three.js. The jaw drops with the narration's
- * loudness envelope, the eyes blink, the head drifts. It sits over every scene of the composition,
- * large beside the "who I am" text and small in a corner while the prototype is on screen.
+ * The narrator: a stylised 3-D character built from primitives in three.js (no downloaded
+ * assets), lit softly and animated procedurally. The mouth opens with the narration's loudness
+ * envelope, the eyes blink, the head nods and turns, the chest breathes, and the hands come up
+ * and gesture while she talks. It sits over every scene: large beside the "who I am" text and
+ * small in a corner while the prototype is on screen.
  */
-type FaceData = { n: number; z: number[]; jaw: number[]; inner: number[]; blink: number[]; blinkTarget: number[]; anchors: { faceCenter: [number, number]; mouthHeight: number } };
-const FACE = faceJson as unknown as FaceData;
-
 export type AvatarMode = "big" | "small" | "none";
 export type AvatarCue = { from: number; frames: number; mode: AvatarMode; envelope: number[]; voDelay: number };
 
@@ -21,52 +19,46 @@ const CAM_Z = 3.2;
 const FOV = 40;
 const PX_PER_UNIT = 1080 / 2 / (CAM_Z * Math.tan(((FOV / 2) * Math.PI) / 180));
 const toWorld = (px: number, py: number): [number, number] => [(px - 960) / PX_PER_UNIT, (540 - py) / PX_PER_UNIT];
-/** Where the centre of the face sits on screen (pixels) and how large the head is (plane units per photo). */
-const LAYOUT: Record<Exclude<AvatarMode, "none">, { x: number; y: number; scale: number; fadeW: number; fadeH: number }> = {
-  big: { x: 430, y: 470, scale: 1.9, fadeW: 900, fadeH: 260 },
-  small: { x: 200, y: 880, scale: 0.66, fadeW: 430, fadeH: 150 },
+const HEAD_Y = 0.62; // head centre above the figure's origin (base of the neck)
+/** Where the centre of the head sits on screen (pixels), the figure's scale, and which way she faces. */
+const LAYOUT: Record<Exclude<AvatarMode, "none">, { x: number; y: number; scale: number; yaw: number; gesture: number; fadeH: number }> = {
+  big: { x: 440, y: 400, scale: 1.0, yaw: 0.16, gesture: 1, fadeH: 220 },
+  small: { x: 205, y: 870, scale: 0.44, yaw: 0.05, gesture: 0.25, fadeH: 130 },
 };
-const MAX_OPEN = 0.038; // jaw drop at full loudness, in photo units (the closed mouth is ~0.057 tall)
 
-const easeOut = (x: number) => 1 - Math.pow(1 - clamp01(x), 3);
+const easeOutBack = (x: number) => {
+  const c1 = 1.70158, c3 = c1 + 1;
+  return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+};
 
-function useTexture(url: string): THREE.Texture | null {
-  const [tex, setTex] = useState<THREE.Texture | null>(null);
-  useEffect(() => {
-    const handle = delayRender("avatar texture");
-    new THREE.TextureLoader().load(
-      url,
-      (t) => {
-        t.colorSpace = THREE.SRGBColorSpace;
-        t.anisotropy = 4;
-        setTex(t);
-        continueRender(handle);
-      },
-      undefined,
-      () => continueRender(handle),
-    );
-  }, [url]);
-  return tex;
-}
-
-/** Loudness → mouth opening, smoothed so syllables read as motion rather than flicker. */
-function speechOpen(cue: AvatarCue | undefined, frame: number): number {
-  if (!cue) return 0;
-  const local = frame - cue.from - cue.voDelay;
-  if (local < 0) return 0;
-  let a = 0;
-  for (let i = 0; i <= local; i++) {
-    const cur = clamp01((cue.envelope[i] ?? 0) * 5.5);
-    a += (cur - a) * (cur > a ? 0.7 : 0.45);
+/**
+ * Per-frame mouth opening and "is she talking" level for the whole film, smoothed continuously
+ * across scene cuts so the hands and mouth never snap. `open` follows syllables (fast attack,
+ * medium release); `talk` is slow, so the hands rise at the start of a sentence and settle in pauses.
+ */
+function speechSeries(cues: AvatarCue[]): { open: number[]; talk: number[] } {
+  const open: number[] = [], talk: number[] = [];
+  let a = 0, b = 0;
+  for (const c of cues) {
+    for (let f = 0; f < c.frames; f++) {
+      const i = f - c.voDelay;
+      const e = i >= 0 ? (c.envelope[i] ?? 0) : 0;
+      const cur = clamp01(e * 5.5);
+      a += (cur - a) * (cur > a ? 0.7 : 0.45);
+      const on = e > 0.02 ? 1 : 0;
+      b += (on - b) * (on > b ? 0.12 : 0.035);
+      open[c.from + f] = Math.pow(a, 0.85);
+      talk[c.from + f] = b;
+    }
   }
-  return Math.pow(a, 0.85);
+  return { open, talk };
 }
 
 function blinkAmount(T: number): number {
   const period = 3.1;
   const i = Math.floor((T - 0.9) / period);
   let out = 0;
-  for (const k of [i - 1, i]) {
+  for (const k of [i, i + 1]) {
     const t0 = 0.9 + k * period + 0.6 * Math.sin(k * 2.7);
     const dt = T - t0;
     const a = dt < 0 ? 0 : dt < 0.08 ? dt / 0.08 : dt < 0.13 ? 1 : dt < 0.26 ? 1 - (dt - 0.13) / 0.13 : 0;
@@ -75,84 +67,150 @@ function blinkAmount(T: number): number {
   return out;
 }
 
-const Head: React.FC<{ open: number; blink: number; assemble: number; opacity: number; texture: THREE.Texture }> = ({ open, blink, assemble, opacity, texture }) => {
-  const N = FACE.n;
-  const W = N + 1;
-  const count = W * W;
-  const fc = FACE.anchors.faceCenter;
-  const base = useMemo(() => {
-    const x0 = new Float32Array(count), y0 = new Float32Array(count), z0 = new Float32Array(count), v = new Float32Array(count);
-    const uv = new Float32Array(count * 2);
-    for (let j = 0; j < W; j++) {
-      for (let i = 0; i < W; i++) {
-        const k = j * W + i;
-        const u = i / N, vv = j / N;
-        x0[k] = u - 0.5;
-        y0[k] = 0.5 - vv;
-        z0[k] = FACE.z[k] ?? 0;
-        v[k] = vv;
-        uv[k * 2] = u;
-        uv[k * 2 + 1] = 1 - vv;
-      }
-    }
-    const index: number[] = [];
-    for (let j = 0; j < N; j++) {
-      for (let i = 0; i < N; i++) {
-        const a = j * W + i, b = a + 1, c = a + W, d = c + 1;
-        index.push(a, c, b, b, c, d);
-      }
-    }
-    return { x0, y0, z0, v, uv, index };
-  }, [N, W, count]);
-  const geom = useMemo(() => {
-    const g = new THREE.BufferGeometry();
-    const pos = new Float32Array(count * 3);
-    for (let k = 0; k < count; k++) {
-      pos[k * 3] = base.x0[k]!;
-      pos[k * 3 + 1] = base.y0[k]!;
-      pos[k * 3 + 2] = base.z0[k]!;
-    }
-    g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-    g.setAttribute("color", new THREE.BufferAttribute(new Float32Array(count * 3).fill(1), 3));
-    g.setAttribute("uv", new THREE.BufferAttribute(base.uv, 2));
-    g.setIndex(base.index);
-    g.computeVertexNormals();
-    return g;
-  }, [base, count]);
-  const mat = useMemo(() => new THREE.MeshStandardMaterial({ map: texture, vertexColors: true, transparent: true, alphaTest: 0.04, roughness: 1, metalness: 0 }), [texture]);
-  useLayoutEffect(() => {
-    const pos = geom.getAttribute("position") as THREE.BufferAttribute;
-    const arr = pos.array as Float32Array;
-    const col = geom.getAttribute("color") as THREE.BufferAttribute;
-    const carr = col.array as Float32Array;
-    const drop = open * MAX_OPEN;
-    for (let k = 0; k < count; k++) {
-      let x = base.x0[k]!, y = base.y0[k]!, z = base.z0[k]!;
-      const j = FACE.jaw[k] ?? 0;
-      if (j > 0) {
-        y -= drop * j;
-        z -= drop * 0.4 * j;
-      }
-      const b = FACE.blink[k] ?? 0;
-      if (b > 0 && blink > 0) y = lerp(y, 0.5 - (FACE.blinkTarget[k] ?? 0), blink * b);
-      if (assemble < 1) {
-        // the portrait starts flat and far back, then inflates into its relief, top row first
-        const a = easeOut((assemble - base.v[k]! * 0.25) / 0.75);
-        z = lerp(-0.9, z, a);
-      }
-      arr[k * 3] = x;
-      arr[k * 3 + 1] = y;
-      arr[k * 3 + 2] = z;
-      const dark = 1 - open * (FACE.inner[k] ?? 0) * 0.9;
-      carr[k * 3] = dark;
-      carr[k * 3 + 1] = dark;
-      carr[k * 3 + 2] = dark;
-    }
-    pos.needsUpdate = true;
-    col.needsUpdate = true;
-    mat.opacity = opacity;
-  }, [open, blink, assemble, opacity, geom, mat, base, count]);
-  return <mesh geometry={geom} material={mat} position={[0.5 - fc[0], fc[1] - 0.5, 0]} />;
+const tri = (pts: Array<[number, number]>) => {
+  const s = new THREE.Shape();
+  s.moveTo(pts[0]![0], pts[0]![1]);
+  for (const p of pts.slice(1)) s.lineTo(p[0], p[1]);
+  s.closePath();
+  return new THREE.ShapeGeometry(s);
+};
+
+function useParts() {
+  return useMemo(() => {
+    const std = (color: string, roughness = 0.75, extra: Partial<THREE.MeshStandardMaterialParameters> = {}) => new THREE.MeshStandardMaterial({ color, roughness, metalness: 0, ...extra });
+    const mat = {
+      skin: std("#d6a07f", 0.72),
+      hair: std("#1d1512", 0.5, { side: THREE.DoubleSide }),
+      blazer: std("#3a4150", 0.85),
+      lapel: std("#4a5264", 0.8),
+      shirt: std("#f3f5f8", 0.6),
+      white: std("#f8f8f8", 0.25),
+      iris: std("#4b2d1b", 0.4),
+      pupil: std("#0b0a0a", 0.3),
+      gleam: new THREE.MeshStandardMaterial({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.2, roughness: 0.2 }),
+      lips: std("#b4675d", 0.6, { transparent: true }),
+      smile: std("#b4675d", 0.6, { transparent: true }),
+      cavity: std("#3d1818", 0.9),
+      brow: std("#1d1512", 0.6),
+      gold: std("#dcb864", 0.3, { metalness: 0.85 }),
+    };
+    const geo = {
+      head: new THREE.SphereGeometry(0.42, 64, 48),
+      eye: new THREE.SphereGeometry(0.075, 32, 24),
+      iris: new THREE.SphereGeometry(0.046, 32, 24),
+      pupil: new THREE.SphereGeometry(0.022, 16, 12),
+      gleam: new THREE.SphereGeometry(0.012, 8, 8),
+      nose: new THREE.SphereGeometry(0.05, 24, 18),
+      ear: new THREE.SphereGeometry(0.07, 24, 18),
+      earring: new THREE.SphereGeometry(0.026, 16, 12),
+      brow: new THREE.TorusGeometry(0.085, 0.011, 8, 24, Math.PI * 0.55),
+      lip: new THREE.TorusGeometry(0.1, 0.014, 10, 32, Math.PI * 0.7),
+      cavity: new THREE.SphereGeometry(0.07, 32, 24),
+      lowerLip: new THREE.CapsuleGeometry(0.014, 0.12, 6, 12),
+      neck: new THREE.CylinderGeometry(0.12, 0.14, 0.36, 32),
+      torso: new RoundedBoxGeometry(1.15, 1.1, 0.5, 6, 0.16),
+      shoulder: new THREE.SphereGeometry(0.17, 32, 24),
+      upperArm: new THREE.CapsuleGeometry(0.1, 0.42, 8, 16),
+      foreArm: new THREE.CapsuleGeometry(0.09, 0.38, 8, 16),
+      hand: new THREE.SphereGeometry(0.11, 24, 18),
+      hairCap: new THREE.SphereGeometry(0.455, 64, 48, 0, Math.PI * 2, 0, Math.PI * 0.38),
+      hairFall: new THREE.LatheGeometry(
+        [[0.3, 0.4], [0.38, 0.26], [0.47, 0.0], [0.5, -0.3], [0.56, -0.55], [0.64, -0.78], [0.64, -1.0], [0.62, -1.24]].map(([r, y]) => new THREE.Vector2(r, y)),
+        64,
+        1.0,
+        Math.PI * 2 - 2.0,
+      ),
+      upperLip: new THREE.CapsuleGeometry(0.012, 0.12, 6, 12),
+      shirt: tri([[-0.17, 0], [0.17, 0], [0, -0.5]]),
+      lapelL: tri([[-0.31, 0.02], [-0.16, 0], [0, -0.52], [-0.05, -0.58]]),
+      lapelR: tri([[0.31, 0.02], [0.16, 0], [0, -0.52], [0.05, -0.58]]),
+    };
+    return { mat, geo };
+  }, []);
+}
+
+type Pose = { open: number; blink: number; talk: number; T: number; yaw: number; gesture: number };
+
+const Arm: React.FC<{ side: 1 | -1; talk: number; T: number; parts: ReturnType<typeof useParts> }> = ({ side, talk, T, parts }) => {
+  const { geo, mat } = parts;
+  const right = side === 1;
+  // rest pose hangs by the side; while talking the right hand comes up in front of the chest and moves
+  const restUpper: [number, number, number] = [0.12, 0, 0.18 * side];
+  const talkUpper: [number, number, number] = right ? [0.95 + 0.1 * Math.sin(T * 4.1 + 1), 0.15, 0.2 + 0.08 * Math.sin(T * 2.9)] : [0.5 + 0.06 * Math.sin(T * 3.3), -0.1, -0.3 + 0.05 * Math.sin(T * 2.2)];
+  const restElbow = 0.25;
+  const talkElbow = right ? 1.2 + 0.18 * Math.sin(T * 5.3) : 0.85 + 0.1 * Math.sin(T * 3.7 + 2);
+  const k = right ? talk : talk * 0.8;
+  const upper: [number, number, number] = [lerp(restUpper[0], talkUpper[0], k), lerp(restUpper[1], talkUpper[1], k), lerp(restUpper[2], talkUpper[2], k)];
+  const elbow = lerp(restElbow, talkElbow, k);
+  return (
+    <group position={[0.58 * side, -0.12, 0]} rotation={upper}>
+      <mesh geometry={geo.upperArm} material={mat.blazer} position={[0, -0.31, 0]} />
+      <group position={[0, -0.6, 0]} rotation={[elbow, 0, 0]}>
+        <mesh geometry={geo.foreArm} material={mat.blazer} position={[0, -0.28, 0]} />
+        <mesh geometry={geo.hand} material={mat.skin} position={[0, -0.63, 0]} scale={[1, 1.15, 0.7]} />
+      </group>
+    </group>
+  );
+};
+
+const Figure: React.FC<Pose> = ({ open, blink, talk, T, yaw, gesture }) => {
+  const parts = useParts();
+  const { geo, mat } = parts;
+  const headPitch = 0.05 * Math.sin(T * 0.33 + 1.2) + open * 0.03;
+  const headYaw = 0.09 * Math.sin(T * 0.47) + 0.025 * Math.sin(T * 1.31);
+  const headRoll = 0.02 * Math.sin(T * 0.21 + 0.5);
+  const raise = 0.5 * talk + 0.5 * open;
+  const mouth = 0.12 + open * 0.85;
+  const gaze: [number, number] = [0.012 * Math.sin(T * 0.7), 0.006 * Math.sin(T * 0.9)];
+  const breathe = 1 + 0.012 * Math.sin(T * 1.3);
+  const eyeY = 1 - 0.92 * blink;
+  mat.smile.opacity = clamp01(1 - open * 1.6);
+  mat.lips.opacity = clamp01(open * 2.5);
+  return (
+    <group rotation={[0, yaw + 0.05 * Math.sin(T * 0.41), 0.015 * Math.sin(T * 0.5)]}>
+      {/* body */}
+      <mesh geometry={geo.neck} material={mat.skin} position={[0, 0.1, 0]} />
+      <group scale={[1, breathe, 1]}>
+        <mesh geometry={geo.torso} material={mat.blazer} position={[0, -0.6, 0]} />
+        <mesh geometry={geo.shoulder} material={mat.blazer} position={[-0.52, -0.1, 0]} />
+        <mesh geometry={geo.shoulder} material={mat.blazer} position={[0.52, -0.1, 0]} />
+        <mesh geometry={geo.shirt} material={mat.shirt} position={[0, -0.06, 0.252]} />
+        <mesh geometry={geo.lapelL} material={mat.lapel} position={[0, -0.06, 0.256]} />
+        <mesh geometry={geo.lapelR} material={mat.lapel} position={[0, -0.06, 0.256]} />
+      </group>
+      <Arm side={1} talk={talk * gesture} T={T} parts={parts} />
+      <Arm side={-1} talk={talk * gesture} T={T} parts={parts} />
+      {/* head */}
+      <group position={[0, HEAD_Y, 0]} rotation={[headPitch, headYaw, headRoll]}>
+        <mesh geometry={geo.head} material={mat.skin} scale={[1, 1.1, 0.95]} />
+        <mesh geometry={geo.ear} material={mat.skin} position={[-0.4, -0.02, 0]} />
+        <mesh geometry={geo.ear} material={mat.skin} position={[0.4, -0.02, 0]} />
+        <mesh geometry={geo.earring} material={mat.gold} position={[-0.4, -0.1, 0.04]} />
+        <mesh geometry={geo.earring} material={mat.gold} position={[0.4, -0.1, 0.04]} />
+        <mesh geometry={geo.nose} material={mat.skin} position={[0, -0.045, 0.4]} scale={[0.75, 1.0, 0.6]} />
+        {[-1, 1].map((s) => (
+          <group key={s} position={[0.15 * s, 0.06, 0.33]} scale={[1, eyeY, 1]}>
+            <mesh geometry={geo.eye} material={mat.white} />
+            <mesh geometry={geo.iris} material={mat.iris} position={[gaze[0], gaze[1], 0.045]} />
+            <mesh geometry={geo.pupil} material={mat.pupil} position={[gaze[0] * 1.2, gaze[1] * 1.2, 0.07]} />
+            <mesh geometry={geo.gleam} material={mat.gleam} position={[0.02 + gaze[0], 0.022 + gaze[1], 0.086]} />
+          </group>
+        ))}
+        {[-1, 1].map((s) => (
+          <mesh key={s} geometry={geo.brow} material={mat.brow} position={[0.15 * s, 0.115 + raise * 0.025, 0.37]} rotation={[0.1, 0.3 * s, Math.PI * 0.225 + 0.06 * s]} />
+        ))}
+        <mesh geometry={geo.lip} material={mat.smile} position={[0, -0.08, 0.37]} rotation={[0, 0, Math.PI * 1.15]} />
+        <mesh geometry={geo.upperLip} material={mat.lips} position={[0, -0.178, 0.365]} rotation={[0, 0, Math.PI / 2]} scale={[1, 1 + 0.3 * open, 1]} />
+        <mesh geometry={geo.cavity} material={mat.cavity} position={[0, -0.18 - 0.07 * mouth, 0.33]} scale={[1.6 + 0.4 * open, mouth, 0.6]} />
+        <mesh geometry={geo.lowerLip} material={mat.lips} position={[0, -0.18 - 0.14 * mouth - 0.012, 0.365]} rotation={[0, 0, Math.PI / 2]} scale={[1, 1 + 0.4 * open, 1]} />
+        {/* hair: cap, back and sides, and four long locks over the shoulders */}
+        <group position={[0, 0.07, -0.03]} scale={[1.02, 1.08, 1]}>
+          <mesh geometry={geo.hairCap} material={mat.hair} />
+        </group>
+        <mesh geometry={geo.hairFall} material={mat.hair} position={[0, 0, -0.04]} />
+      </group>
+    </group>
+  );
 };
 
 const Floor: React.FC<{ show: number }> = ({ show }) => {
@@ -161,16 +219,14 @@ const Floor: React.FC<{ show: number }> = ({ show }) => {
     (g.material as THREE.Material).transparent = true;
     return g;
   }, []);
-  useLayoutEffect(() => {
-    (grid.material as THREE.Material).opacity = 0.3 * show;
-  }, [grid, show]);
+  (grid.material as THREE.Material).opacity = 0.3 * show;
   return <primitive object={grid} position={[0, -1.3, -1]} />;
 };
 
 export const AvatarOverlay: React.FC<{ cues: AvatarCue[] }> = ({ cues }) => {
   const frame = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
-  const texture = useTexture(staticFile("photo/cutout.png"));
+  const { fps, width, height, durationInFrames } = useVideoConfig();
+  const series = useMemo(() => speechSeries(cues), [cues]);
   const T = frame / fps;
   const idx = cues.findIndex((c) => frame >= c.from && frame < c.from + c.frames);
   const cue = cues[idx];
@@ -182,34 +238,33 @@ export const AvatarOverlay: React.FC<{ cues: AvatarCue[] }> = ({ cues }) => {
   const lay = (m: AvatarMode) => (m === "none" ? LAYOUT.big : LAYOUT[m]);
   const from = lay(prevMode === "none" ? mode : prevMode);
   const to = lay(mode === "none" ? prevMode : mode);
-  const x = lerp(from.x, to.x, blend), y = lerp(from.y, to.y, blend), scale = lerp(from.scale, to.scale, blend);
-  const fadeW = lerp(from.fadeW, to.fadeW, blend), fadeH = lerp(from.fadeH, to.fadeH, blend);
-  let opacity = ramp(T, 0.15, 0.7);
-  if (mode === "none") opacity *= 1 - ramp(local, 0, 0.4, "linear");
-  else if (prevMode === "none") opacity *= ramp(local, 0, 0.4, "linear");
-  const open = speechOpen(cue, frame);
+  const x = lerp(from.x, to.x, blend), y = lerp(from.y, to.y, blend), scale = lerp(from.scale, to.scale, blend), yaw = lerp(from.yaw, to.yaw, blend), gesture = lerp(from.gesture, to.gesture, blend);
+  const fadeH = lerp(from.fadeH, to.fadeH, blend);
+  let presence = easeOutBack(ramp(T, 0.15, 0.8, "linear"));
+  if (mode === "none") presence *= prevMode === "none" ? 0 : 1 - ramp(local, 0, 0.4, "inout");
+  else if (prevMode === "none") presence *= easeOutBack(ramp(local, 0, 0.6, "linear"));
+  presence *= fadeOut(T, durationInFrames / fps, 0.3);
+  const open = series.open[frame] ?? 0;
+  const talk = series.talk[frame] ?? 0;
   const blink = blinkAmount(T);
-  const assemble = ramp(T, 0.1, 1.2, "linear");
-  const motion = mode === "small" ? 0.6 : 1;
-  const yaw = (0.09 * Math.sin(T * 0.47) + 0.025 * Math.sin(T * 1.31)) * motion;
-  const pitch = (0.045 * Math.sin(T * 0.33 + 1.2) + open * 0.025) * motion;
-  const roll = 0.018 * Math.sin(T * 0.21 + 0.5) * motion;
-  const [wx, wy] = toWorld(x, y);
-  const floorShow = opacity * (mode === "big" ? 1 : prevMode === "big" ? 1 - blend : 0);
+  const s = Math.max(0.0001, scale * presence);
+  const [wx, wy] = toWorld(x, y + HEAD_Y * s * PX_PER_UNIT);
+  const floorShow = Math.min(1, presence) * (mode === "big" ? 1 : prevMode === "big" ? 1 - blend : 0);
+  if (!cue || presence <= 0) return null;
+  // the bottom of the figure dissolves into the frame edge through a mask, so nothing is painted over the scene
+  const mask = `linear-gradient(to bottom, black ${height - fadeH}px, rgba(0,0,0,0.1) ${height - fadeH * 0.45}px, transparent ${height - fadeH * 0.22}px)`;
   return (
     <AbsoluteFill style={{ pointerEvents: "none" }}>
-      <ThreeCanvas width={width} height={height} camera={{ fov: FOV, position: [0, 0, CAM_Z] }} style={{ position: "absolute", inset: 0 }} gl={{ antialias: true, alpha: true }} flat>
-        <ambientLight intensity={0.86} />
-        <directionalLight position={[1.5, 2, 3]} intensity={0.34} />
-        <directionalLight position={[-2, 0.5, 2]} intensity={0.12} color="#9ec5ff" />
+      <ThreeCanvas width={width} height={height} camera={{ fov: FOV, position: [0, 0, CAM_Z] }} style={{ position: "absolute", inset: 0, WebkitMaskImage: mask, maskImage: mask }} gl={{ antialias: true, alpha: true }} flat>
+        <hemisphereLight args={["#dfe6ef", "#2a2f3a", 0.75]} />
+        <directionalLight position={[2, 3, 4]} intensity={1.35} color="#fff1e0" />
+        <directionalLight position={[-3, 2, -2]} intensity={0.9} color="#4f9ee8" />
+        <directionalLight position={[-2, 0, 3]} intensity={0.35} />
         <Floor show={floorShow} />
-        {texture ? (
-          <group position={[wx, wy, 0]} rotation={[pitch, yaw, roll]} scale={[scale, scale, scale]}>
-            <Head open={open} blink={blink} assemble={assemble} opacity={opacity} texture={texture} />
-          </group>
-        ) : null}
+        <group position={[wx, wy, 0]} scale={[s, s, s]}>
+          <Figure open={open} blink={blink} talk={talk} T={T} yaw={yaw} gesture={gesture} />
+        </group>
       </ThreeCanvas>
-      <div style={{ position: "absolute", left: 0, bottom: 0, width: fadeW, height: fadeH, opacity, background: "linear-gradient(to bottom, rgba(9,12,19,0) 0%, rgba(9,12,19,0.9) 55%, #090c13 78%)" }} />
     </AbsoluteFill>
   );
 };
