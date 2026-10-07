@@ -33,8 +33,8 @@ spoken = []
 section = None
 for line in open("../docs/video/narration.md"):
     if line.startswith("## "): section = line.strip()
-    m = re.match(r"\|\s*(\d+)\s*\|\s*([a-z0-9]+)\s*\|\s*(.+?)\s*\|\s*$", line)
-    if m: rows.append((int(m.group(1)), m.group(2), m.group(3)))
+    m = re.match(r"\|\s*(\d+)\s*\|\s*([a-z0-9]+)\s*\|\s*(.+?)\s*\|(?:\s*([A-Za-z0-9-]+)\s*\|)?\s*$", line)
+    if m: rows.append((int(m.group(1)), m.group(2), m.group(3), m.group(4)))
     if section == "## Spoken forms":
         sm = re.match(r"\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*$", line)
         if sm and sm.group(1) not in ("written", "---"): spoken.append((sm.group(1), sm.group(2)))
@@ -44,23 +44,35 @@ def say_form(text):
         text = re.sub(r"(?<![\w-])" + re.escape(written) + r"(?![\w-])", said, text)
     return text
 timing = {}
-for n, key, text in rows:
+for n, key, text, line_voice in rows:
     text = say_form(text)
+    use_voice = line_voice or voice
     raw = f"public/audio/{key}.raw"
     wav = f"public/audio/{key}.wav"
     if engine == "edge":
         raw += ".mp3"
-        subprocess.run([sys.executable, "-m", "edge_tts", "--voice", voice, f"--rate={edge_rate}", "--text", text, "--write-media", raw], check=True, capture_output=True)
+        subprocess.run([sys.executable, "-m", "edge_tts", "--voice", use_voice, f"--rate={edge_rate}", "--text", text, "--write-media", raw], check=True, capture_output=True)
     else:
         raw += ".wav"
-        subprocess.run(["say", "-v", voice, "-r", rate, "--file-format=WAVE", "--data-format=LEI16@22050", "-o", raw, text], check=True)
+        subprocess.run(["say", "-v", use_voice if engine != "edge" else voice, "-r", rate, "--file-format=WAVE", "--data-format=LEI16@22050", "-o", raw, text], check=True)
     af = f"atempo={tempo}," if float(tempo) != 1.0 else ""
     subprocess.run([ffmpeg, "-y", "-loglevel", "error", "-i", raw, "-af", f"{af}loudnorm=I=-17:TP=-1.5:LRA=8", "-ar", "44100", "-ac", "1", "-c:a", "pcm_s16le", "-f", "wav", wav], check=True)
     os.remove(raw)
     out = subprocess.run([ffmpeg, "-i", wav], capture_output=True, text=True).stderr
     d = re.search(r"Duration: (\d+):(\d+):(\d+\.\d+)", out)
     secs = int(d.group(1)) * 3600 + int(d.group(2)) * 60 + float(d.group(3))
-    timing[key] = {"index": n, "seconds": round(secs, 2), "file": f"audio/{key}.wav", "text": text, "voice": voice}
+    timing[key] = {"index": n, "seconds": round(secs, 2), "file": f"audio/{key}.wav", "text": text, "voice": use_voice}
+    # per-frame loudness envelope (30 fps) so visuals can react to the voice
+    import wave, struct, math
+    with wave.open(wav) as w:
+        frames = w.readframes(w.getnframes()); sr = w.getframerate()
+    samples = struct.unpack("<" + "h" * (len(frames) // 2), frames)
+    hop = sr // 30
+    env = []
+    for i in range(0, len(samples), hop):
+        chunk = samples[i:i + hop]
+        env.append(round(math.sqrt(sum(c * c for c in chunk) / max(1, len(chunk))) / 32768.0, 4))
+    timing[key]["envelope"] = env
     print(f"{key:12s} {secs:5.1f}s")
 os.makedirs("src/data", exist_ok=True)
 json.dump(timing, open("src/data/timing.json", "w"), indent=1)

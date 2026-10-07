@@ -10,11 +10,16 @@
   },
   "dependencies": {
     "@blindspot/web": "*",
+    "@react-three/fiber": "^9.0.0",
     "@remotion/cli": "4.0.533",
     "@remotion/google-fonts": "^4.0.533",
+    "@remotion/three": "^4.0.533",
+    "@types/three": "^0.170.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "remotion": "4.0.533"
+    "remotion": "4.0.533",
+    "three": "^0.170.0",
+    "use-sync-external-store": "^1.4.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.10",

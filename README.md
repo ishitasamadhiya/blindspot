@@ -332,6 +332,7 @@ the sound design (clicks, whoosh, stamp, ping, riser, ambient bed) is synthesise
 ```bash
 npm run video:tts            # narration clips from docs/video/narration.md + timing.json (ENGINE=say to use macOS voices)
 npm run video:sound          # sound effects and the ambient bed into video/public/audio/sfx/
+npm run video:portrait       # point cloud of the headshot for the 3-D intro
 npm run video:render         # video/out/blindspot-demo.mp4 (1080p, H.264); DemoSilent has no narration
 npm run video:studio         # scrub scenes in the Remotion studio
 ```
@@ -340,8 +341,12 @@ To use your own voice, record each line of `docs/video/narration.md` as
 `video/public/audio/<scene>.wav`, update `video/src/data/timing.json` with the clip lengths, and
 render again; scene lengths follow the clips.
 
-The opening scene shows a headshot read from `video/public/photo/headshot.jpeg`; that folder is
-git-ignored, so drop your own photo there before rendering.
+The opening scene is a 3-D particle portrait (Three.js via `@remotion/three`): `npm run
+video:portrait` samples `video/public/photo/headshot.jpeg` into a point cloud that assembles on
+screen and resolves into the photo while an announcer voice introduces the author. The photo
+folder and the generated point cloud are git-ignored, so drop your own photo there and run the
+portrait script before rendering. Rendering the 3-D scene needs Chrome's ANGLE renderer, which
+`remotion.config.ts` sets.
 
 ## Future improvements
 

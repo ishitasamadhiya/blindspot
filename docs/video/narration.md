@@ -6,9 +6,9 @@ falling back to macOS `say`), and the scene lengths in the Remotion composition
 follow the clip lengths in `video/src/data/timing.json`. Re-record with your own voice by replacing the
 clips in `video/public/audio/` (same file names) and re-running the render.
 
-| # | Scene | Narration |
-|---|---|---|
-| 1 | whyme | I'm Ishita Samadhiya, EECS and Business at Berkeley M.E.T. I like finding messy product problems, figuring out what actually matters, and building the system that fixes them. |
+| # | Scene | Narration | Voice |
+|---|---|---|---|
+| 1 | avatar | Meet Ishita Samadhiya, EECS and Business at Berkeley M.E.T. She finds messy product problems, works out what actually matters, and builds the system that fixes them. Here she is. | en-US-AndrewNeural |
 | 2 | proof | At MIT CSAIL, evaluation design for RAG in production. At FrontDesk, a customer problem taken from interviews to a shipped pipeline. At Valency, benchmarking on bootstrap intervals. And Holographic Studio: an idea that already worked, plus its missing layer. |
 | 3 | hook | Here's one. Three weeks after go-live, Contoso's claim agent approved this claim for zero dollars. The eval said ninety-four percent, green. Both are true. If I joined Team Delta tomorrow, this is what I'd fix first. |
 | 4 | works | Delta's forward-deployed engineers embed with the customer. Every engagement starts with an expert-graded golden set, replayed on every release. CI for agents. |
@@ -39,8 +39,9 @@ right-hand column if a word still comes out wrong.
 
 | written | spoken |
 |---|---|
-| Ishita Samadhiya | Ish-ee-tah Suh-mah-dee-yah |
-| Ishita | Ish-ee-tah |
+| Ishita Samadhiya | ih-shee-tha some-ah-dhee-yah |
+| Ishita | ih-shee-tha |
+| Samadhiya | some-ah-dhee-yah |
 | M.E.T. | M E T |
 | EECS | E E C S |
 | CSAIL | C-sail |

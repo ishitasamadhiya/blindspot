@@ -10,7 +10,8 @@ import type { Snapshot } from "./data/types";
 import { ChapterBar, type Chapter } from "./components/Motion";
 import { Hook, Hypothesis, Measure, Signal, Works } from "./scenes/Part1";
 import { Move1, Move2, Move3, Stack } from "./scenes/Part2";
-import { Before, Blocked, Close, Control, Fixed, Harvest, Proof, WhyMe } from "./scenes/Part3";
+import { Before, Blocked, Close, Control, Fixed, Harvest, Proof } from "./scenes/Part3";
+import { Avatar } from "./scenes/Avatar";
 
 loadInter("normal", { weights: ["400", "500", "600", "700", "800"], subsets: ["latin"] });
 loadMono("normal", { weights: ["400", "500"], subsets: ["latin"] });
@@ -21,7 +22,7 @@ const GAP = 0.35;
 
 type SceneKey = keyof typeof timing;
 const SCENES: Array<{ key: SceneKey; min: number; chapter: Chapter; render: (seconds: number) => React.ReactNode }> = [
-  { key: "whyme", min: 8, chapter: "Who I am", render: (s) => <WhyMe seconds={s} /> },
+  { key: "avatar", min: 9, chapter: "Who I am", render: (s) => <Avatar seconds={s} /> },
   { key: "proof", min: 11, chapter: "Who I am", render: (s) => <Proof seconds={s} /> },
   { key: "hook", min: 10, chapter: "Noticed", render: (s) => <Hook seconds={s} snap={snap} /> },
   { key: "works", min: 6, chapter: "Noticed", render: (s) => <Works seconds={s} /> },
