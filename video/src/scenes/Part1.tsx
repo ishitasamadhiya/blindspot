@@ -29,7 +29,7 @@ export const Hook: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds, s
       <Sfx name="whoosh" at={tileIn} volume={0.3} />
       <Camera seconds={seconds} from={1} to={1.05} y={-10} origin="35% 45%">
         <Fade start={0.1} style={{ position: "absolute", left: 96, top: 110 }}>
-          <div style={{ fontSize: 15, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-3)", marginBottom: 10 }}>Here is one · Contoso Foods · deduction-claim validator · live decisions · Oct 5</div>
+          <div style={{ fontSize: 15, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-3)", marginBottom: 10 }}>From the field · Contoso Foods · deduction-claim validator · live decisions · Oct 5</div>
           <Ticker rows={feed} start={0.3} every={0.16} width={820} highlightLast />
         </Fade>
         <Fade start={freeze} style={{ position: "absolute", left: 96, top: 110, width: 820 }} y={0}>
@@ -107,16 +107,16 @@ export const Works: React.FC<{ seconds: number }> = ({ seconds }) => (
     ))}
     <Camera seconds={seconds} from={1.02} to={1} origin="50% 50%">
       <div className="lower">
-        <Eyebrow start={0.2}>What already works</Eyebrow>
-        <Kinetic text="Delta's evaluation harness." start={0.4} size={56} />
+        <Eyebrow start={0.2}>What already works · Delta's forward-deployed engineers</Eyebrow>
+        <Kinetic text="Embedded with the customer, every engagement starts the same way." start={0.4} size={52} />
       </div>
-      <Node x={150} y={470} at={0.9} title="Historical decisions" sub="analyst outcomes, Jun–Aug" />
-      <Arrow x1={470} y1={505} x2={560} y2={505} at={1.5} />
-      <Node x={575} y={455} at={1.8} title="Golden set v1" sub="400 claims · graded by 2 domain experts" tone="accent" />
-      <Arrow x1={990} y1={505} x2={1080} y2={505} at={2.5} />
-      <Node x={1095} y={470} at={2.8} title="Replay on every release" sub="accuracy, per-retailer, per-type" />
-      <Arrow x1={1455} y1={505} x2={1545} y2={505} at={3.5} />
-      <Node x={1560} y={470} at={3.8} title="Ship" sub="into the customer's tenant" tone="success" />
+      <Node x={120} y={470} at={0.9} title="Embed with the customer" sub="FDEs working inside the customer's business" />
+      <Arrow x1={520} y1={505} x2={585} y2={505} at={1.5} />
+      <Node x={600} y={470} at={1.8} title="Discovery" sub="find the decisions that matter" />
+      <Arrow x1={905} y1={505} x2={965} y2={505} at={2.5} />
+      <Node x={980} y={470} at={2.8} title="Golden set v1" sub="expert-graded, from real historical cases" tone="accent" />
+      <Arrow x1={1385} y1={505} x2={1445} y2={505} at={3.5} />
+      <Node x={1460} y={470} at={3.8} title="Replay on every release" sub="CI for the agent" tone="success" />
     </Camera>
     <Caption start={4.6}>
       CI for agents. <b>The right idea.</b> The question is what it is blind to.

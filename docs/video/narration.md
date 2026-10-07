@@ -11,7 +11,7 @@ clips in `video/public/audio/` (same file names) and re-running the render.
 | 1 | whyme | I'm Ishita Samadhiya, EECS and Business at Berkeley M.E.T. I like finding messy product problems, figuring out what actually matters, and building the system that fixes them. |
 | 2 | proof | At MIT CSAIL, evaluation design for RAG in production. At FrontDesk, a customer problem taken from interviews to a shipped pipeline. At Valency, benchmarking on bootstrap intervals. And Holographic Studio: an idea that already worked, plus its missing layer. |
 | 3 | hook | Here's one. Three weeks after go-live, Contoso's claim agent approved this claim for zero dollars. The eval said ninety-four percent, green. Both are true. If I joined Team Delta tomorrow, this is what I'd fix first. |
-| 4 | works | What already works: an expert-graded golden set, replayed on every release. CI for agents. |
+| 4 | works | Delta's forward-deployed engineers embed with the customer. Every engagement starts with an expert-graded golden set, replayed on every release. CI for agents. |
 | 5 | signal | Then the customer's analysts start overriding one decision in four. The eval never moves. |
 | 6 | hypothesis | So instead of asking if the agent is right: how much of this week's traffic has the eval actually seen? |
 | 7 | measure | Embed every claim, calibrate on the golden set itself, measure. Fifty-four percent. |

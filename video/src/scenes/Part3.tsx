@@ -11,6 +11,7 @@ import { Camera, Counter, Sfx, Stamp } from "../components/Motion";
 import { ramp, useT } from "../lib/anim";
 import type { Snapshot } from "../data/types";
 
+const WHYME_TAGLINE = "That is the forward-deployed job.";
 const pct = (x: number, d = 1) => `${(x * 100).toFixed(d)}%`;
 const pts = (x: number) => `${x >= 0 ? "+" : ""}${(x * 100).toFixed(1)} pts`;
 
@@ -287,6 +288,9 @@ export const WhyMe: React.FC<{ seconds: number }> = ({ seconds }) => {
           <div style={{ marginTop: 40 }}>
             <Kinetic text="I like finding messy product problems, figuring out what actually matters, and building the system that fixes them." start={2.9} size={42} color="var(--text)" perWord={0.045} />
           </div>
+          <Fade start={6.2} style={{ marginTop: 26, fontSize: 30, color: "var(--accent)", fontWeight: 600 }}>
+            {WHYME_TAGLINE}
+          </Fade>
         </div>
       </Camera>
     </Scene>
@@ -299,7 +303,7 @@ const PROOF: Array<{ where: string; what: string; pinned: string }> = [
   { where: "Valency", what: "a 25-experiment benchmarking program with paired-bootstrap CIs and LLM-as-judge", pinned: "the interval on the score is my code" },
   { where: "Holographic Studio", what: "a vocal-cover recorder where hand gestures drive autotune, echo and volume, exported as one synced MP4", pinned: "existing idea → missing layer" },
   { where: "Founder", what: "Skinsnap, zero to 10,000+ users, acquired", pinned: "what “the customer says it's broken” costs" },
-  { where: "Microsoft Delta", what: "here is the problem I would want to fix first", pinned: "" },
+  { where: "Microsoft Delta", what: "forward-deployed engineers embedded with customers. Here is what I would fix first.", pinned: "" },
 ];
 
 export const Proof: React.FC<{ seconds: number }> = ({ seconds }) => (

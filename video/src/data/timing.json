@@ -22,9 +22,9 @@
  },
  "works": {
   "index": 4,
-  "seconds": 6.53,
+  "seconds": 9.38,
   "file": "audio/works.wav",
-  "text": "What already works: an expert-graded golden set, replayed on every release. CI for agents.",
+  "text": "Delta's forward-deployed engineers embed with the customer. Every engagement starts with an expert-graded golden set, replayed on every release. CI for agents.",
   "voice": "en-US-AvaMultilingualNeural"
  },
  "signal": {
