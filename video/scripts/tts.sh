@@ -43,24 +43,32 @@ def say_form(text):
     for written, said in spoken:
         text = re.sub(r"(?<![\w-])" + re.escape(written) + r"(?![\w-])", said, text)
     return text
-timing = {}
+only = set(filter(None, os.environ.get("ONLY", "").split(",")))  # ONLY=hi,how regenerates a subset
+timing = json.load(open("src/data/timing.json")) if only and os.path.exists("src/data/timing.json") else {}
 for n, key, text, line_voice in rows:
+    if only and key not in only:
+        continue
     text = say_form(text)
     use_voice = line_voice or voice
     raw = f"public/audio/{key}.raw"
     wav = f"public/audio/{key}.wav"
-    if engine == "edge":
-        raw += ".mp3"
-        subprocess.run([sys.executable, "-m", "edge_tts", "--voice", use_voice, f"--rate={edge_rate}", "--text", text, "--write-media", raw], check=True, capture_output=True)
-    else:
-        raw += ".wav"
-        subprocess.run(["say", "-v", use_voice if engine != "edge" else voice, "-r", rate, "--file-format=WAVE", "--data-format=LEI16@22050", "-o", raw, text], check=True)
-    af = f"atempo={tempo}," if float(tempo) != 1.0 else ""
-    subprocess.run([ffmpeg, "-y", "-loglevel", "error", "-i", raw, "-af", f"{af}loudnorm=I=-17:TP=-1.5:LRA=8", "-ar", "44100", "-ac", "1", "-c:a", "pcm_s16le", "-f", "wav", wav], check=True)
-    os.remove(raw)
-    out = subprocess.run([ffmpeg, "-i", wav], capture_output=True, text=True).stderr
-    d = re.search(r"Duration: (\d+):(\d+):(\d+\.\d+)", out)
-    secs = int(d.group(1)) * 3600 + int(d.group(2)) * 60 + float(d.group(3))
+    for attempt in range(3):
+        if engine == "edge":
+            raw = f"public/audio/{key}.raw.mp3"
+            subprocess.run([sys.executable, "-m", "edge_tts", "--voice", use_voice, f"--rate={edge_rate}", "--text", text, "--write-media", raw], check=True, capture_output=True)
+        else:
+            raw = f"public/audio/{key}.raw.wav"
+            subprocess.run(["say", "-v", use_voice if engine != "edge" else voice, "-r", rate, "--file-format=WAVE", "--data-format=LEI16@22050", "-o", raw, text], check=True)
+        af = f"atempo={tempo}," if float(tempo) != 1.0 else ""
+        subprocess.run([ffmpeg, "-y", "-loglevel", "error", "-i", raw, "-af", f"{af}loudnorm=I=-17:TP=-1.5:LRA=8", "-ar", "44100", "-ac", "1", "-c:a", "pcm_s16le", "-f", "wav", wav], check=True)
+        os.remove(raw)
+        out = subprocess.run([ffmpeg, "-i", wav], capture_output=True, text=True).stderr
+        d = re.search(r"Duration: (\d+):(\d+):(\d+\.\d+)", out)
+        secs = int(d.group(1)) * 3600 + int(d.group(2)) * 60 + float(d.group(3))
+        # the service occasionally returns a truncated clip; a sentence cannot be shorter than ~0.15 s per word
+        if secs >= min(1.0, 0.15 * len(text.split())):
+            break
+        print(f"{key}: clip too short ({secs:.2f}s), retrying")
     timing[key] = {"index": n, "seconds": round(secs, 2), "file": f"audio/{key}.wav", "text": text, "voice": use_voice}
     # per-frame loudness envelope (30 fps) so visuals can react to the voice
     import wave, struct, math

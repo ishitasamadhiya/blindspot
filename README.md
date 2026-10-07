@@ -321,32 +321,38 @@ run and the noise-versus-regression distinction.
 
 ## The video
 
-`video/` is a Remotion project whose scenes render the real React components with data recorded
-from `npm run story -- --snapshot video/src/data/snapshot.json`. The voice-over is synthetic (a
-single-language Microsoft neural voice through Edge TTS, `pip install edge-tts`; multilingual voices
-are avoided because they switch accent mid-sentence; names and acronyms get spoken forms from the
-table at the end of `docs/video/narration.md`; falls back to macOS `say`), and
-the sound design (clicks, whoosh, stamp, ping, riser, ambient bed) is synthesised from scratch by
-`video/scripts/sound.py`, so nothing in the video needs a licence.
+`video/` is a Remotion project with two compositions. `Demo` is the short cut: about a minute of
+who I am and how I work (past work, the pain point → fix pattern), then thirty seconds of what I
+would do at Delta with this prototype. `DemoFull` is the long walkthrough of the prototype. Both
+render the real React components with data recorded from
+`npm run story -- --snapshot video/src/data/snapshot.json`.
+
+The narrator is a speaking avatar: the headshot with its background removed, laid over a depth
+relief built from Apple Vision face landmarks (`video/scripts/face.swift`, no Python packages
+needed) and lit in three.js via `@remotion/three`. The jaw follows the narration's loudness
+envelope, the eyes blink, the head drifts; it sits large beside the "who I am" text and small in
+a corner while the prototype is on screen. The photo, the cutout and the landmark grid are
+git-ignored, so drop your own `video/public/photo/headshot.jpeg` and run `npm run video:face`.
+
+The voice-over is synthetic: one warm, single-language Microsoft neural voice (`en-US-AvaNeural`)
+through Edge TTS (`pip install edge-tts`; multilingual voices are avoided because they switch
+accent mid-sentence; names and acronyms get spoken forms from the table at the end of
+`docs/video/narration.md`; falls back to macOS `say`). The sound design (clicks, whoosh, stamp,
+ping, riser, ambient bed) is synthesised from scratch by `video/scripts/sound.py`, so nothing in
+the video needs a licence.
 
 ```bash
-npm run video:tts            # narration clips from docs/video/narration.md + timing.json (ENGINE=say to use macOS voices)
+npm run video:tts            # narration clips from docs/video/narration.md + timing.json (ONLY=hi,how for a subset; ENGINE=say for macOS voices)
 npm run video:sound          # sound effects and the ambient bed into video/public/audio/sfx/
-npm run video:portrait       # point cloud of the headshot for the 3-D intro
-npm run video:render         # video/out/blindspot-demo.mp4 (1080p, H.264); DemoSilent has no narration
+npm run video:face           # cutout + depth grid + mouth/eye weights from the headshot (macOS, uses the Vision framework)
+npm run video:render         # video/out/blindspot-demo.mp4 (1080p, H.264); DemoSilent has no narration, DemoFull is the long walkthrough
 npm run video:studio         # scrub scenes in the Remotion studio
 ```
 
 To use your own voice, record each line of `docs/video/narration.md` as
-`video/public/audio/<scene>.wav`, update `video/src/data/timing.json` with the clip lengths, and
-render again; scene lengths follow the clips.
-
-The opening scene is a 3-D particle portrait (Three.js via `@remotion/three`): `npm run
-video:portrait` samples `video/public/photo/headshot.jpeg` into a point cloud that assembles on
-screen and resolves into the photo while an announcer voice introduces the author. The photo
-folder and the generated point cloud are git-ignored, so drop your own photo there and run the
-portrait script before rendering. Rendering the 3-D scene needs Chrome's ANGLE renderer, which
-`remotion.config.ts` sets.
+`video/public/audio/<scene>.wav`, re-run `npm run video:tts` with `ENGINE=say` only for the
+timing file (or edit `timing.json` by hand), and render again; scene lengths follow the clips.
+Rendering the avatar needs Chrome's ANGLE renderer, which `remotion.config.ts` sets.
 
 ## Future improvements
 

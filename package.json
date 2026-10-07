@@ -26,7 +26,7 @@
     "screenshots": "node scripts/screenshots.mjs",
     "video:tts": "bash video/scripts/tts.sh",
     "video:sound": "python3 video/scripts/sound.py",
-    "video:portrait": "python3 video/scripts/portrait.py"
+    "video:face": "python3 video/scripts/face.py"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",

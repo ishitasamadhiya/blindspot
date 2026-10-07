@@ -62,15 +62,14 @@ export const Sfx: React.FC<{ name: string; at: number; volume?: number }> = ({ n
   return <Audio src={staticFile(`audio/sfx/${name}.wav`)} volume={volume} startFrom={0} />;
 };
 
-const CHAPTERS = ["Who I am", "Noticed", "Investigated", "Built", "Shipped"] as const;
-export type Chapter = (typeof CHAPTERS)[number];
+export type Chapter = string;
 
 /** Thin progress strip at the bottom: which chapter of the story we are in. */
-export const ChapterBar: React.FC<{ chapter: Chapter; progress: number }> = ({ chapter, progress }) => {
-  const idx = CHAPTERS.indexOf(chapter);
+export const ChapterBar: React.FC<{ chapters: readonly string[]; chapter: Chapter; progress: number }> = ({ chapters, chapter, progress }) => {
+  const idx = chapters.indexOf(chapter);
   return (
     <div style={{ position: "absolute", left: 96, right: 96, bottom: 30, display: "flex", gap: 10, alignItems: "center", fontSize: 14, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-3)" }}>
-      {CHAPTERS.map((c, i) => (
+      {chapters.map((c, i) => (
         <div key={c} style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
           <div style={{ height: 3, borderRadius: 2, background: "var(--border-strong)", overflow: "hidden" }}>
             <div style={{ height: "100%", width: `${i < idx ? 100 : i === idx ? progress * 100 : 0}%`, background: i <= idx ? "var(--accent)" : "transparent" }} />
