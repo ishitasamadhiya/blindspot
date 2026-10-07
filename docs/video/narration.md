@@ -39,9 +39,9 @@ right-hand column if a word still comes out wrong.
 
 | written | spoken |
 |---|---|
-| Ishita Samadhiya | ih-shee-tha some-ah-dhee-yah |
-| Ishita | ih-shee-tha |
-| Samadhiya | some-ah-dhee-yah |
+| Ishita Samadhiya | ee-shee-tha some-ah-dee-yah |
+| Ishita | ee-shee-tha |
+| Samadhiya | some-ah-dee-yah |
 | M.E.T. | M E T |
 | EECS | E E C S |
 | CSAIL | C-sail |
