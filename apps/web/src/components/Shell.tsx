@@ -38,13 +38,12 @@ export const Shell: React.FC<{ route: Route; engagement?: { customer: string; ag
       <nav className="nav" aria-label="primary">
         {NAV.map((n) => (
           <a key={n.key} href={`#/${n.key}`} className={route === n.key ? "active" : ""} aria-current={route === n.key ? "page" : undefined}>
-            <span className="step">{n.step}</span>
             {n.label}
           </a>
         ))}
       </nav>
       <div className="engagement">
-        <b>{engagement?.customer ?? "—"}</b>
+        <b>{engagement?.customer ?? "…"}</b>
         {engagement?.agent ?? ""}
         <div className="faint" style={{ marginTop: 8 }}>
           embedder {embedder ?? "…"}

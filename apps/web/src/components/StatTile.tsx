@@ -8,7 +8,6 @@ export const StatTile: React.FC<{
   hint?: string;
 }> = ({ label, value, sub, tone = "neutral", hint }) => (
   <div className={`tile ${tone}`} title={hint}>
-    <div className="bar" />
     <div className="label">
       {label}
       {tone !== "neutral" ? <span className="sr-only">{tone === "good" ? " (healthy)" : tone === "bad" ? " (needs attention)" : " (warning)"}</span> : null}

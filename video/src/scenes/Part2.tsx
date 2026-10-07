@@ -24,7 +24,7 @@ export const Move1: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds, 
       ))}
       <Camera seconds={seconds} from={1} to={1.05} x={30} y={-10} origin="30% 55%">
         <div className="lower">
-          <Eyebrow start={0.1}>Move 1 of 3</Eyebrow>
+          <Eyebrow start={0.1}>The first move</Eyebrow>
           <Kinetic text="Find the traffic the eval has never seen." start={0.3} size={48} />
         </div>
         <Fade start={0.4} style={{ position: "absolute", left: 96, top: 230, width: 980 }}>
@@ -102,7 +102,7 @@ export const Move2: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds, 
       <Sfx name="whoosh" at={8.4} volume={0.3} />
       <Camera seconds={seconds} from={1} to={1.04} x={-20} origin="70% 45%">
         <div className="lower">
-          <Eyebrow start={0.1}>Move 2 of 3</Eyebrow>
+          <Eyebrow start={0.1}>The second move</Eyebrow>
           <Kinetic text="Grade ten, not a thousand." start={0.3} size={48} />
         </div>
         <div style={{ position: "absolute", left: 96, top: 230, width: 760 }}>
@@ -179,7 +179,7 @@ export const Move3: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds, 
       ))}
       <Camera seconds={seconds} from={1} to={1.03} origin="50% 40%">
         <div className="lower">
-          <Eyebrow start={0.1}>Move 3 of 3</Eyebrow>
+          <Eyebrow start={0.1}>The third move</Eyebrow>
           <Kinetic text="Block the release." start={0.3} size={48} />
         </div>
         <div style={{ position: "absolute", left: 96, top: 230, width: 880 }}>

@@ -4,7 +4,6 @@ import { IntervalBar } from "@web/components/Interval";
 import { SegmentBars } from "@web/components/SegmentBars";
 import { Patch } from "@web/components/Patch";
 import { VersionTimeline } from "@web/components/VersionTimeline";
-import { StatTile } from "@web/components/StatTile";
 import { clusterColor } from "@web/components/CoverageMap";
 import { Caption, Eyebrow, Fade, Kinetic, Logo, Scene, Shot, Window } from "../components/Primitives";
 import { Camera, Counter, Sfx, Stamp } from "../components/Motion";
@@ -30,16 +29,18 @@ export const Before: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds,
         <div className="lower">
           <Eyebrow start={0.1}>Before</Eyebrow>
         </div>
-        <div style={{ position: "absolute", left: 96, top: 200, width: 1744, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 18, fontSize: 22 }}>
-          <Fade start={0.2} style={{ zoom: 1.6 }}>
-            <StatTile label="Eval accuracy · golden v1 · release/1.3" value={pct(acc.estimate)} sub={`95% CI ${pct(acc.lo)} – ${pct(acc.hi)} on 400 cases`} tone="good" />
-          </Fade>
-          <Fade start={0.45} style={{ zoom: 1.6 }}>
-            <StatTile label="Coverage · last 7 days vs golden v1" value={pct(snap.coverage_v1.coverage)} sub={`${snap.coverage_v1.covered} of ${snap.coverage_v1.total} traces within the golden set's neighbourhood`} tone="bad" />
-          </Fade>
-          <Fade start={0.7} style={{ zoom: 1.6 }}>
-            <StatTile label="Analyst override rate · last 7 days" value={pct(over)} sub={`was ${pct(overBefore)} the week before the migration`} tone="bad" />
-          </Fade>
+        <div style={{ position: "absolute", left: 96, top: 220, width: 1744, display: "flex", alignItems: "stretch" }}>
+          {[
+            { label: "Eval accuracy on golden v1, release/1.3", value: pct(acc.estimate), sub: `95% CI ${pct(acc.lo)} to ${pct(acc.hi)} on 400 cases`, color: "var(--success)" },
+            { label: "Coverage of the last 7 days", value: pct(snap.coverage_v1.coverage), sub: `${snap.coverage_v1.covered} of ${snap.coverage_v1.total} traces inside the golden set's neighbourhood`, color: "var(--danger)" },
+            { label: "Analyst override rate, last 7 days", value: pct(over), sub: `was ${pct(overBefore)} the week before the migration`, color: "var(--danger)" },
+          ].map((m, i) => (
+            <Fade key={m.label} start={0.2 + i * 0.25} style={{ flex: 1, padding: "0 40px", borderLeft: i ? "1px solid var(--border-strong)" : "none" }}>
+              <div style={{ fontSize: 24, color: "var(--text-2)" }}>{m.label}</div>
+              <div style={{ fontSize: 96, fontWeight: 700, color: m.color, letterSpacing: "-0.035em", lineHeight: 1.1 }}>{m.value}</div>
+              <div style={{ fontSize: 20, color: "var(--text-3)", marginTop: 4, maxWidth: 480 }}>{m.sub}</div>
+            </Fade>
+          ))}
         </div>
         <div style={{ position: "absolute", left: 96, top: 620 }}>
           <Kinetic text="Green dashboard. Unhappy customer." start={1.0} size={64} />
@@ -134,11 +135,11 @@ export const Blocked: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds
           </Stamp>
         </div>
         <Fade start={1.0} style={{ position: "absolute", left: 1150, top: 230, width: 690 }}>
-          <div style={{ fontSize: 22, color: "var(--text-2)" }}>accuracy on 430 cases</div>
-          <div className="bigstat" style={{ color: "var(--danger)", fontSize: 120 }}>
+          <div style={{ fontSize: 26, color: "var(--text-2)" }}>accuracy on the 430 cases of golden v2</div>
+          <div className="bigstat" style={{ color: "var(--danger)", fontSize: 104 }}>
             <Counter from={snap.baseline.run.metrics!.accuracy.estimate * 100} to={m.accuracy.estimate * 100} start={1.2} duration={1.2} format={(v) => `${v.toFixed(1)}%`} />
           </div>
-          <div style={{ fontSize: 20, color: "var(--text-2)", marginBottom: 20 }}>
+          <div style={{ fontSize: 22, color: "var(--text-2)", marginBottom: 20 }}>
             95% CI {pct(m.accuracy.lo)} – {pct(m.accuracy.hi)}
           </div>
           <Window title="by blind spot (harvested cases)" width={690} bodyStyle={{ padding: "8px 18px" }}>

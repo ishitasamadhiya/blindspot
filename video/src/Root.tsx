@@ -1,6 +1,6 @@
 import React from "react";
 import { Audio, Composition, Sequence, staticFile } from "remotion";
-import { loadFont as loadInter } from "@remotion/google-fonts/Inter";
+import { loadFont as loadSans } from "@remotion/google-fonts/InstrumentSans";
 import { loadFont as loadMono } from "@remotion/google-fonts/JetBrainsMono";
 import "@web/styles.css";
 import "./video.css";
@@ -13,7 +13,7 @@ import { Move1, Move2, Move3, Stack } from "./scenes/Part2";
 import { Before, Blocked, Close, Control, Fixed, Harvest, Proof } from "./scenes/Part3";
 import { Avatar } from "./scenes/Avatar";
 
-loadInter("normal", { weights: ["400", "500", "600", "700", "800"], subsets: ["latin"] });
+loadSans("normal", { weights: ["400", "500", "600", "700"], subsets: ["latin"] });
 loadMono("normal", { weights: ["400", "500"], subsets: ["latin"] });
 
 const FPS = 30;

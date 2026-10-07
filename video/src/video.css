@@ -1,5 +1,5 @@
 .vd {
-  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  font-family: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
   color: var(--text);
   width: 1920px;
   height: 1080px;
@@ -9,10 +9,10 @@
 }
 .vd .vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(1400px 900px at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.35) 100%); }
 .vd .grid-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px); background-size: 48px 48px; mask-image: radial-gradient(900px 600px at 50% 45%, black 30%, transparent 100%); }
-.vd .kinetic { font-weight: 600; letter-spacing: -0.025em; line-height: 1.08; }
+.vd .kinetic { font-weight: 600; letter-spacing: -0.02em; line-height: 1.08; }
 .vd .kinetic .w { display: inline-block; margin-right: 0.26em; will-change: transform, opacity; }
-.vd .caption { position: absolute; left: 96px; bottom: 72px; display: flex; align-items: center; gap: 18px; font-size: 26px; color: var(--text-2); max-width: 1500px; }
-.vd .caption .bar { width: 4px; height: 34px; background: var(--accent); border-radius: 2px; flex: none; }
+.vd .caption { position: absolute; left: 96px; bottom: 72px; display: flex; align-items: center; gap: 18px; font-size: 27px; color: var(--text-2); max-width: 1500px; }
+.vd .caption .bar { display: none; }
 .vd .caption b { color: var(--text); font-weight: 600; }
 .vd .eyebrow { font-size: 20px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
 .vd .window { background: var(--surface); border: 1px solid var(--border-strong); border-radius: 14px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255,255,255,0.03) inset; overflow: hidden; }
@@ -36,7 +36,7 @@
 .vd .node.danger { border-color: var(--danger); }
 .vd .node.success { border-color: var(--success); }
 .vd .pill { display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--border-strong); background: var(--surface); font-size: 22px; font-weight: 600; }
-.vd .bigstat { font-size: 150px; font-weight: 700; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+.vd .bigstat { font-size: 124px; font-weight: 700; letter-spacing: -0.035em; line-height: 1; font-variant-numeric: tabular-nums; }
 .vd .lower { position: absolute; left: 96px; top: 84px; }
 .vd .card-stack { display: flex; flex-direction: column; gap: 16px; }
 .vd .proofcard { display: grid; grid-template-columns: 300px 1fr; gap: 28px; align-items: center; padding: 18px 26px; border: 1px solid var(--border-strong); border-radius: 14px; background: var(--surface); font-size: 26px; }

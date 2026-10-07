@@ -28,7 +28,7 @@ export const Hook: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds, s
       <Sfx name="stamp" at={freeze + 0.9} volume={0.8} />
       <Sfx name="whoosh" at={tileIn} volume={0.3} />
       <Camera seconds={seconds} from={1} to={1.05} y={-10} origin="35% 45%">
-        <Fade start={0.1} style={{ position: "absolute", left: 96, top: 110 }}>
+        <Fade start={0.1} out={freeze} style={{ position: "absolute", left: 96, top: 110 }}>
           <div style={{ fontSize: 15, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-3)", marginBottom: 10 }}>From the field · Contoso Foods · deduction-claim validator · live decisions · Oct 5</div>
           <Ticker rows={feed} start={0.3} every={0.16} width={820} highlightLast />
         </Fade>
@@ -53,11 +53,11 @@ export const Hook: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds, s
             <span className="t">Release gate · release/1.3 · golden v1</span>
           </div>
           <div className="body" style={{ padding: "28px 32px" }}>
-            <div style={{ fontSize: 20, color: "var(--text-2)" }}>Eval accuracy · re-run on every release</div>
-            <div style={{ fontSize: 120, fontWeight: 700, color: "var(--success)", letterSpacing: "-0.04em", lineHeight: 1.05 }}>
+            <div style={{ fontSize: 24, color: "var(--text-2)" }}>Eval accuracy, re-run on every release</div>
+            <div style={{ fontSize: 104, fontWeight: 700, color: "var(--success)", letterSpacing: "-0.035em", lineHeight: 1.05 }}>
               <Counter from={0} to={acc.estimate * 100} start={tileIn + 0.1} duration={1.1} format={(v) => `${v.toFixed(1)}%`} />
             </div>
-            <div style={{ fontSize: 20, color: "var(--text-2)" }}>
+            <div style={{ fontSize: 22, color: "var(--text-2)" }}>
               95% CI {pct(acc.lo)} – {pct(acc.hi)} on 400 expert-graded claims
             </div>
             <Fade start={tileIn + 1.0} style={{ marginTop: 18, display: "inline-flex", gap: 10, alignItems: "center", background: "var(--success-soft)", color: "var(--success)", padding: "8px 16px", borderRadius: 999, fontWeight: 700, fontSize: 22 }}>
@@ -160,12 +160,12 @@ export const Signal: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds,
         </Fade>
       </Camera>
       <Fade start={2.4} style={{ position: "absolute", right: 120, top: 330, textAlign: "right" }}>
-        <div style={{ fontSize: 22, color: "var(--text-2)" }}>analyst override rate</div>
-        <div style={{ fontSize: 44, color: "var(--text-2)", fontWeight: 600 }}>{pct(rate(first))}</div>
-        <div style={{ fontSize: 110, fontWeight: 700, color: "var(--danger)", letterSpacing: "-0.04em", lineHeight: 1 }}>
+        <div style={{ fontSize: 26, color: "var(--text-2)" }}>analyst override rate, last 7 days</div>
+        <div style={{ fontSize: 40, color: "var(--text-2)", fontWeight: 600 }}>{pct(rate(first))} the week before</div>
+        <div style={{ fontSize: 96, fontWeight: 700, color: "var(--danger)", letterSpacing: "-0.035em", lineHeight: 1 }}>
           <Counter from={rate(first) * 100} to={rate(last) * 100} start={2.6} duration={1.4} format={(v) => `${v.toFixed(1)}%`} />
         </div>
-        <div style={{ fontSize: 22, color: "var(--text-2)", marginTop: 10 }}>eval on golden v1: still {pct(snap.baseline.run.metrics!.accuracy.estimate)}</div>
+        <div style={{ fontSize: 24, color: "var(--text-2)", marginTop: 10 }}>eval on golden v1: still {pct(snap.baseline.run.metrics!.accuracy.estimate)}</div>
       </Fade>
       <Caption start={3.8}>
         Analysts override <b>1 in 4</b> decisions. The eval never moved.
@@ -237,7 +237,7 @@ export const Measure: React.FC<{ seconds: number; snap: Snapshot }> = ({ seconds
         <div className="bigstat" style={{ color: "var(--danger)" }}>
           <Counter from={100} to={cov.coverage * 100} start={3.6} duration={1.3} format={(v) => `${v.toFixed(1)}%`} />
         </div>
-        <div style={{ fontSize: 24, color: "var(--text-2)", marginTop: 12, maxWidth: 560 }}>of last week's traffic sits inside the golden set's own neighbourhood</div>
+        <div style={{ fontSize: 26, color: "var(--text-2)", marginTop: 12, maxWidth: 560 }}>of last week's traffic sits inside the golden set's own neighbourhood</div>
       </div>
       <Caption start={5.2}>
         Half the traffic has <b>no neighbour</b> in the eval. Covered is defined by the golden set itself, not a magic number.

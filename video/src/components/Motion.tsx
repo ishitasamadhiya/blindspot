@@ -36,7 +36,7 @@ export const Stamp: React.FC<{ at: number; children: React.ReactNode; color: str
   if (t < at) return null;
   return (
     <div style={{ opacity: Math.min(1, p * 1.4), transform: `rotate(${rotate + shake}deg) scale(${scale})`, transformOrigin: "center", ...style }}>
-      <div style={{ border: `4px solid ${color}`, color, borderRadius: 12, padding: "8px 22px", fontSize: size, fontWeight: 800, letterSpacing: "0.04em", background: "rgba(13,17,23,0.82)", boxShadow: `0 0 40px ${color}55`, whiteSpace: "nowrap" }}>{children}</div>
+      <div style={{ border: `4px solid ${color}`, color, borderRadius: 12, padding: "8px 22px", fontSize: size, fontWeight: 700, letterSpacing: "0.04em", background: "rgba(13,17,23,0.82)", whiteSpace: "nowrap" }}>{children}</div>
     </div>
   );
 };
@@ -47,7 +47,7 @@ export const ScanLine: React.FC<{ at: number; duration?: number; width: number; 
   const p = ramp(t, at, duration, "inout");
   if (t < at || p >= 1) return null;
   return (
-    <div style={{ position: "absolute", left: p * width - 2, top: 0, width: 3, height, background: color, boxShadow: `0 0 24px 6px ${color}`, opacity: 0.85, pointerEvents: "none" }}>
+    <div style={{ position: "absolute", left: p * width - 2, top: 0, width: 3, height, background: color, boxShadow: `0 0 10px 2px ${color}`, opacity: 0.85, pointerEvents: "none" }}>
       <div style={{ position: "absolute", right: 0, top: 0, width: 160, height, background: `linear-gradient(90deg, transparent, ${color}22)` }} />
     </div>
   );

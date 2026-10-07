@@ -1,4 +1,4 @@
-# Blindspot — demo video narration
+# Blindspot demo video narration
 
 Target length: about 125 seconds. One line per scene; the voice-over is generated
 from this file by `video/scripts/tts.sh` (a Microsoft neural voice through Edge TTS,

@@ -2,7 +2,7 @@ import React, { useLayoutEffect, useMemo, useRef } from "react";
 import { useVideoConfig } from "remotion";
 import { ThreeCanvas } from "@remotion/three";
 import * as THREE from "three";
-import { Eyebrow, Fade, Kinetic, Logo, Scene, Shot } from "../components/Primitives";
+import { Eyebrow, Fade, Kinetic, Scene, Shot } from "../components/Primitives";
 import { Sfx } from "../components/Motion";
 import { clamp01, ramp, useT } from "../lib/anim";
 import portrait from "../data/portrait.json";
@@ -100,13 +100,10 @@ export const Avatar: React.FC<{ seconds: number }> = ({ seconds }) => {
         <Rings amp={amp} show={show} spin={spin} />
       </ThreeCanvas>
       <div style={{ position: "absolute", left: cx - diameter / 2, top: cy - diameter / 2, width: diameter, height: diameter, opacity: photoIn, transform: `scale(${0.96 + photoIn * 0.04})` }}>
-        <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", boxShadow: `0 0 ${30 + amp * 60}px rgba(79,158,232,${0.25 + amp * 0.5})` }}>
+        <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden" }}>
           <Shot file="photo/headshot.jpeg" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
         </div>
         <div style={{ position: "absolute", inset: -6, borderRadius: "50%", border: "2px solid var(--accent)", opacity: 0.35 + amp * 0.6, transform: `scale(${1 + amp * 0.03})` }} />
-        <div style={{ position: "absolute", right: -18, bottom: 18, background: "var(--surface)", border: "1px solid var(--border-strong)", borderRadius: 999, padding: "6px 12px", display: "flex", alignItems: "center", gap: 8, fontSize: 16, color: "var(--text-2)" }}>
-          <Logo size={22} /> Blindspot
-        </div>
       </div>
       <div style={{ position: "absolute", left: 760, top: 300, maxWidth: 1080 }}>
         <Eyebrow start={0.5}>Who I am</Eyebrow>
