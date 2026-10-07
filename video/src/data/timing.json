@@ -1,121 +1,121 @@
 {
  "whyme": {
   "index": 1,
-  "seconds": 9.5,
+  "seconds": 10.06,
   "file": "audio/whyme.wav",
-  "text": "I'm Ishita Samadhiya, EECS and Business at Berkeley M.E.T. I like finding messy product problems, figuring out what actually matters, and building the system that fixes them.",
-  "voice": "en-US-AvaMultilingualNeural"
+  "text": "I'm Ish-ee-tah Suh-mah-dee-yah, E E C S and Business at Berkeley M E T I like finding messy product problems, figuring out what actually matters, and building the system that fixes them.",
+  "voice": "en-US-AvaNeural"
  },
  "proof": {
   "index": 2,
-  "seconds": 15.67,
+  "seconds": 15.19,
   "file": "audio/proof.wav",
-  "text": "At MIT CSAIL, evaluation design for RAG in production. At FrontDesk, a customer problem taken from interviews to a shipped pipeline. At Valency, benchmarking on bootstrap intervals. And Holographic Studio: an idea that already worked, plus its missing layer.",
-  "voice": "en-US-AvaMultilingualNeural"
+  "text": "At MIT C-sail, evaluation design for rag in production. At FrontDesk, a customer problem taken from interviews to a shipped pipeline. At Vay-len-see, benchmarking on bootstrap intervals. And Holographic Studio: an idea that already worked, plus its missing layer.",
+  "voice": "en-US-AvaNeural"
  },
  "hook": {
   "index": 3,
-  "seconds": 12.26,
+  "seconds": 11.93,
   "file": "audio/hook.wav",
-  "text": "Here's one. Three weeks after go-live, Contoso's claim agent approved this claim for zero dollars. The eval said ninety-four percent, green. Both are true. If I joined Team Delta tomorrow, this is what I'd fix first.",
-  "voice": "en-US-AvaMultilingualNeural"
+  "text": "Here's one. Three weeks after go-live, Con-toe-so's claim agent approved this claim for zero dollars. The eval said ninety-four percent, green. Both are true. If I joined Team Delta tomorrow, this is what I'd fix first.",
+  "voice": "en-US-AvaNeural"
  },
  "works": {
   "index": 4,
-  "seconds": 9.38,
+  "seconds": 9.41,
   "file": "audio/works.wav",
-  "text": "Delta's forward-deployed engineers embed with the customer. Every engagement starts with an expert-graded golden set, replayed on every release. CI for agents.",
-  "voice": "en-US-AvaMultilingualNeural"
+  "text": "Delta's forward-deployed engineers embed with the customer. Every engagement starts with an expert-graded golden set, replayed on every release. C I for agents.",
+  "voice": "en-US-AvaNeural"
  },
  "signal": {
   "index": 5,
-  "seconds": 5.02,
+  "seconds": 4.85,
   "file": "audio/signal.wav",
   "text": "Then the customer's analysts start overriding one decision in four. The eval never moves.",
-  "voice": "en-US-AvaMultilingualNeural"
+  "voice": "en-US-AvaNeural"
  },
  "hypothesis": {
   "index": 6,
-  "seconds": 5.18,
+  "seconds": 5.14,
   "file": "audio/hypothesis.wav",
   "text": "So instead of asking if the agent is right: how much of this week's traffic has the eval actually seen?",
-  "voice": "en-US-AvaMultilingualNeural"
+  "voice": "en-US-AvaNeural"
  },
  "measure": {
   "index": 7,
-  "seconds": 5.35,
+  "seconds": 5.11,
   "file": "audio/measure.wav",
   "text": "Embed every claim, calibrate on the golden set itself, measure. Fifty-four percent.",
-  "voice": "en-US-AvaMultilingualNeural"
+  "voice": "en-US-AvaNeural"
  },
  "move1": {
   "index": 8,
-  "seconds": 10.82,
+  "seconds": 11.04,
   "file": "audio/move1.wav",
   "text": "Move one: find what the eval has never seen. Uncovered claims cluster by content and name themselves: a new portal export, a promo type from after discovery, co-op claims with no invoice.",
-  "voice": "en-US-AvaMultilingualNeural"
+  "voice": "en-US-AvaNeural"
  },
  "move2": {
   "index": 9,
-  "seconds": 11.28,
+  "seconds": 11.59,
   "file": "audio/move2.wav",
   "text": "Move two: grade ten, not a thousand. Typical claims, random draws, and the cases the judge was unsure about. Judge agreement is measured per blind spot: not validated here, not trusted here.",
-  "voice": "en-US-AvaMultilingualNeural"
+  "voice": "en-US-AvaNeural"
  },
  "move3": {
   "index": 10,
-  "seconds": 10.97,
+  "seconds": 10.42,
   "file": "audio/move3.wav",
-  "text": "Move three: block the release. Coverage above eighty-five, no blind spot below eighty, no regression outside a bootstrap interval. One command, one exit code, straight into CI.",
-  "voice": "en-US-AvaMultilingualNeural"
+  "text": "Move three: block the release. Coverage above eighty-five, no blind spot below eighty, no regression outside a bootstrap interval. One command, one exit code, straight into C I.",
+  "voice": "en-US-AvaNeural"
  },
  "stack": {
   "index": 11,
-  "seconds": 8.21,
+  "seconds": 8.14,
   "file": "audio/stack.wav",
-  "text": "TypeScript end to end: React, Node and SQLite with checkpointed jobs, REST plus live events, tested math, optional Azure OpenAI.",
-  "voice": "en-US-AvaMultilingualNeural"
+  "text": "TypeScript end to end: React, Node and sequel-lite with checkpointed jobs, REST plus live events, tested math, optional Azure OpenAI.",
+  "voice": "en-US-AvaNeural"
  },
  "before": {
   "index": 12,
-  "seconds": 3.31,
+  "seconds": 2.86,
   "file": "audio/before.wav",
   "text": "Before: green dashboard, unhappy customer.",
-  "voice": "en-US-AvaMultilingualNeural"
+  "voice": "en-US-AvaNeural"
  },
  "harvest": {
   "index": 13,
-  "seconds": 4.42,
+  "seconds": 4.34,
   "file": "audio/harvest.wav",
-  "text": "After: thirty cases graded in an afternoon. Golden set v2.",
-  "voice": "en-US-AvaMultilingualNeural"
+  "text": "After: thirty cases graded in an afternoon. Golden set vee two.",
+  "voice": "en-US-AvaNeural"
  },
  "blocked": {
   "index": 14,
-  "seconds": 6.53,
+  "seconds": 6.41,
   "file": "audio/blocked.wav",
-  "text": "Release one-three on v2: eighty-seven point nine, zero on the portal cluster. Blocked, reason named.",
-  "voice": "en-US-AvaMultilingualNeural"
+  "text": "Release one-three on vee two: eighty-seven point nine, zero on the portal cluster. Blocked, reason named.",
+  "voice": "en-US-AvaNeural"
  },
  "fixed": {
   "index": 15,
-  "seconds": 7.97,
+  "seconds": 8.04,
   "file": "audio/fixed.wav",
   "text": "A fourteen-line parser patch. Release one-four: ninety-four, plus six points, interval above zero, coverage above ninety. Pass.",
-  "voice": "en-US-AvaMultilingualNeural"
+  "voice": "en-US-AvaNeural"
  },
  "control": {
   "index": 16,
-  "seconds": 6.26,
+  "seconds": 6.82,
   "file": "audio/control.wav",
   "text": "A control: the next release moves one point, the interval includes zero, the gate stays green. No crying wolf.",
-  "voice": "en-US-AvaMultilingualNeural"
+  "voice": "en-US-AvaNeural"
  },
  "close": {
   "index": 17,
-  "seconds": 6.72,
+  "seconds": 6.41,
   "file": "audio/close.wav",
   "text": "We don't ship agents we can't measure. Blindspot keeps the measurement about this week. I'd love to build the next one with Team Delta.",
-  "voice": "en-US-AvaMultilingualNeural"
+  "voice": "en-US-AvaNeural"
  }
 }

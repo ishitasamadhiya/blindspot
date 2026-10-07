@@ -323,7 +323,9 @@ run and the noise-versus-regression distinction.
 
 `video/` is a Remotion project whose scenes render the real React components with data recorded
 from `npm run story -- --snapshot video/src/data/snapshot.json`. The voice-over is synthetic (a
-Microsoft neural voice through Edge TTS, `pip install edge-tts`; falls back to macOS `say`), and
+single-language Microsoft neural voice through Edge TTS, `pip install edge-tts`; multilingual voices
+are avoided because they switch accent mid-sentence; names and acronyms get spoken forms from the
+table at the end of `docs/video/narration.md`; falls back to macOS `say`), and
 the sound design (clicks, whoosh, stamp, ping, riser, ambient bed) is synthesised from scratch by
 `video/scripts/sound.py`, so nothing in the video needs a licence.
 

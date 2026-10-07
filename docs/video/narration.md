@@ -31,3 +31,22 @@ clips in `video/public/audio/` (same file names) and re-running the render.
 whyme 8 · proof 11 · hook 10 · works 6 · signal 5.5 · hypothesis 5 · measure 6.5 · move1 10 · move2 10.5 · move3 10 · stack 7.5 · before 3.4 · harvest 4.2 · blocked 6.5 · fixed 8 · control 6 · close 8
 
 A scene lasts the longer of its visual minimum and its narration clip plus 0.35 s.
+
+## Spoken forms
+
+Applied to the narration text before synthesis only; on-screen text is untouched. Edit the
+right-hand column if a word still comes out wrong.
+
+| written | spoken |
+|---|---|
+| Ishita Samadhiya | Ish-ee-tah Suh-mah-dee-yah |
+| Ishita | Ish-ee-tah |
+| M.E.T. | M E T |
+| EECS | E E C S |
+| CSAIL | C-sail |
+| SQLite | sequel-lite |
+| v2 | vee two |
+| CI | C I |
+| RAG | rag |
+| Contoso | Con-toe-so |
+| Valency | Vay-len-see |

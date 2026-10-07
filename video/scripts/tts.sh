@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Generates the narration clips from docs/video/narration.md and writes
 # video/src/data/timing.json with each clip's length in seconds.
-# Default engine: a Microsoft neural voice through Edge TTS (pip install edge-tts, needs network).
+# Default engine: a single-language Microsoft neural voice through Edge TTS (pip install edge-tts, needs network).
+# Multilingual voices are avoided on purpose: they switch accent mid-sentence and mangle names.
 # Fallback: macOS `say`. Override with ENGINE=say|edge, VOICE=<name>, RATE (say wpm) / EDGE_RATE (+4%).
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -26,13 +27,25 @@ python3 - "$ENGINE" "$VOICE" "$RATE" "$EDGE_RATE" "$FFMPEG" "$TEMPO" <<'PY'
 import re, subprocess, sys, json, os
 engine, voice, rate, edge_rate, ffmpeg, tempo = sys.argv[1:7]
 if not voice:
-    voice = "en-US-AvaMultilingualNeural" if engine == "edge" else "Samantha"
+    voice = "en-US-AvaNeural" if engine == "edge" else "Samantha"
 rows = []
+spoken = []
+section = None
 for line in open("../docs/video/narration.md"):
+    if line.startswith("## "): section = line.strip()
     m = re.match(r"\|\s*(\d+)\s*\|\s*([a-z0-9]+)\s*\|\s*(.+?)\s*\|\s*$", line)
     if m: rows.append((int(m.group(1)), m.group(2), m.group(3)))
+    if section == "## Spoken forms":
+        sm = re.match(r"\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*$", line)
+        if sm and sm.group(1) not in ("written", "---"): spoken.append((sm.group(1), sm.group(2)))
+spoken.sort(key=lambda kv: -len(kv[0]))
+def say_form(text):
+    for written, said in spoken:
+        text = re.sub(r"(?<![\w-])" + re.escape(written) + r"(?![\w-])", said, text)
+    return text
 timing = {}
 for n, key, text in rows:
+    text = say_form(text)
     raw = f"public/audio/{key}.raw"
     wav = f"public/audio/{key}.wav"
     if engine == "edge":
