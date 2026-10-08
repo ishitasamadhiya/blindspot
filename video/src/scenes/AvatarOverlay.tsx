@@ -1,13 +1,16 @@
-import React, { useMemo } from "react";
-import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
+import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { AbsoluteFill, continueRender, delayRender, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { ThreeCanvas } from "@remotion/three";
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
+import { GLTFLoader, type GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { clamp01, fadeOut, lerp, ramp } from "../lib/anim";
 
 /**
- * The narrator: a stylised 3-D character built from primitives in three.js (no downloaded
- * assets), lit softly and animated procedurally. The mouth opens with the narration's loudness
+ * The narrator. If `public/avatar/avatar.glb` exists (an Avaturn export: Mixamo-compatible rig plus
+ * ARKit face blendshapes, git-ignored), it is loaded and driven: the jaw follows the narration's
+ * loudness, the eyes blink, the head and spine drift, the arms gesture. Without it, a stylised
+ * character built from three.js primitives stands in with the same motion. The mouth opens with the narration's loudness
  * envelope, the eyes blink, the head nods and turns, the chest breathes, and the hands come up
  * and gesture while she talks. It sits over every scene: large beside the "who I am" text and
  * small in a corner while the prototype is on screen.
@@ -213,6 +216,108 @@ const Figure: React.FC<Pose> = ({ open, blink, talk, T, yaw, gesture }) => {
   );
 };
 
+const GLB_URL = "avatar/avatar.glb";
+
+/** How the exported rig maps onto the motion. Tune after `python3 scripts/inspect_glb.py public/avatar/avatar.glb`. */
+const RIG = {
+  /** model units (metres) → scene units, per layout */
+  scale: { big: 3.0, small: 1.3 },
+  bones: { head: /head$/i, neck: /neck$/i, spine: /spine1$/i, rightArm: /right(_?)arm$/i, rightForeArm: /right(_?)forearm$/i, leftArm: /left(_?)arm$/i, leftForeArm: /left(_?)forearm$/i },
+  /** XYZ rotations (radians) added to the bind pose: arms down from the A/T pose at rest, then the gesture */
+  arm: { right: { rest: [0, 0, -1.0], talk: [-0.9, 0, -0.5] }, left: { rest: [0, 0, 1.0], talk: [-0.3, 0, 0.9] } },
+  foreArm: { right: { rest: [0, 0, 0], talk: [-1.3, 0.5, 0] }, left: { rest: [0, 0, 0], talk: [-0.6, -0.3, 0] } },
+  morphs: { open: ["jawOpen", "mouthOpen", "viseme_aa"], blink: ["eyeBlinkLeft", "eyeBlinkRight", "eyesClosed"], smile: ["mouthSmileLeft", "mouthSmileRight", "mouthSmile"], brows: ["browInnerUp"] },
+  restSmile: 0.25,
+  openGain: 0.8,
+};
+
+function useGlb(url: string): GLTF | "missing" | null {
+  const [gltf, setGltf] = useState<GLTF | "missing" | null>(null);
+  useEffect(() => {
+    const handle = delayRender("avatar glb", { timeoutInMilliseconds: 120000 });
+    new GLTFLoader().load(
+      url,
+      (g) => {
+        g.scene.traverse((o) => {
+          const m = o as THREE.Mesh;
+          if (m.isMesh) m.frustumCulled = false;
+        });
+        setGltf(g);
+        continueRender(handle);
+      },
+      undefined,
+      () => {
+        setGltf("missing");
+        continueRender(handle);
+      },
+    );
+  }, [url]);
+  return gltf;
+}
+
+const euler = (r: number[]) => new THREE.Quaternion().setFromEuler(new THREE.Euler(r[0] ?? 0, r[1] ?? 0, r[2] ?? 0));
+const mix = (a: number[], b: number[], k: number) => a.map((v, i) => lerp(v, b[i] ?? 0, k));
+
+/** The exported avatar, placed with its head at the group origin and driven bone by bone. */
+const GlbFigure: React.FC<Pose & { gltf: GLTF }> = ({ gltf, open, blink, talk, T, yaw, gesture }) => {
+  const rig = useMemo(() => {
+    const scene = gltf.scene;
+    const find = (re: RegExp) => {
+      let hit: THREE.Object3D | null = null;
+      scene.traverse((o) => {
+        if (!hit && re.test(o.name)) hit = o;
+      });
+      return hit as THREE.Object3D | null;
+    };
+    const bones = Object.fromEntries(Object.entries(RIG.bones).map(([k, re]) => [k, find(re)])) as Record<keyof typeof RIG.bones, THREE.Object3D | null>;
+    const rest = new Map<THREE.Object3D, THREE.Quaternion>();
+    for (const b of Object.values(bones)) if (b) rest.set(b, b.quaternion.clone());
+    const morphs: Array<{ mesh: THREE.Mesh; dict: Record<string, number> }> = [];
+    scene.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (m.morphTargetDictionary && m.morphTargetInfluences) morphs.push({ mesh: m, dict: m.morphTargetDictionary });
+    });
+    scene.updateMatrixWorld(true);
+    const headPos = new THREE.Vector3();
+    (bones.head ?? scene).getWorldPosition(headPos);
+    return { scene, bones, rest, morphs, headPos };
+  }, [gltf]);
+  const headPitch = 0.05 * Math.sin(T * 0.33 + 1.2) + open * 0.03;
+  const headYaw = 0.09 * Math.sin(T * 0.47) + 0.025 * Math.sin(T * 1.31);
+  const headRoll = 0.02 * Math.sin(T * 0.21 + 0.5);
+  const raise = 0.5 * talk + 0.5 * open;
+  useLayoutEffect(() => {
+    const set = (names: string[], v: number) => {
+      for (const { mesh, dict } of rig.morphs) for (const n of names) {
+        const i = dict[n];
+        if (i !== undefined && mesh.morphTargetInfluences) mesh.morphTargetInfluences[i] = v;
+      }
+    };
+    set(RIG.morphs.open, clamp01(open * RIG.openGain));
+    set(RIG.morphs.blink, blink);
+    set(RIG.morphs.smile, RIG.restSmile * (1 - open));
+    set(RIG.morphs.brows, raise * 0.5);
+    const rot = (bone: THREE.Object3D | null, r: number[]) => {
+      if (!bone) return;
+      bone.quaternion.copy(rig.rest.get(bone)!).multiply(euler(r));
+    };
+    rot(rig.bones.head, [headPitch, headYaw, headRoll]);
+    rot(rig.bones.neck, [headPitch * 0.4, headYaw * 0.4, 0]);
+    rot(rig.bones.spine, [0.01 * Math.sin(T * 1.3), 0.03 * Math.sin(T * 0.41), 0.012 * Math.sin(T * 0.5)]);
+    const kr = talk * gesture, kl = talk * gesture * 0.8;
+    const wob = (f: number, ph = 0) => Math.sin(T * f + ph);
+    rot(rig.bones.rightArm, mix(RIG.arm.right.rest, RIG.arm.right.talk, kr).map((v, i) => v + (i === 0 ? 0.08 * wob(4.1, 1) : i === 2 ? 0.06 * wob(2.9) : 0) * kr));
+    rot(rig.bones.rightForeArm, mix(RIG.foreArm.right.rest, RIG.foreArm.right.talk, kr).map((v, i) => v + (i === 0 ? 0.15 * wob(5.3) : 0) * kr));
+    rot(rig.bones.leftArm, mix(RIG.arm.left.rest, RIG.arm.left.talk, kl).map((v, i) => v + (i === 0 ? 0.05 * wob(3.3) : 0) * kl));
+    rot(rig.bones.leftForeArm, mix(RIG.foreArm.left.rest, RIG.foreArm.left.talk, kl).map((v, i) => v + (i === 0 ? 0.08 * wob(3.7, 2) : 0) * kl));
+  }, [rig, open, blink, talk, T, gesture, headPitch, headYaw, headRoll, raise]);
+  return (
+    <group rotation={[0, yaw + 0.05 * Math.sin(T * 0.41), 0]}>
+      <primitive object={rig.scene} position={[-rig.headPos.x, -rig.headPos.y, -rig.headPos.z]} />
+    </group>
+  );
+};
+
 const Floor: React.FC<{ show: number }> = ({ show }) => {
   const grid = useMemo(() => {
     const g = new THREE.GridHelper(14, 40, 0x2a3442, 0x1a2230);
@@ -227,6 +332,8 @@ export const AvatarOverlay: React.FC<{ cues: AvatarCue[] }> = ({ cues }) => {
   const frame = useCurrentFrame();
   const { fps, width, height, durationInFrames } = useVideoConfig();
   const series = useMemo(() => speechSeries(cues), [cues]);
+  const glb = useGlb(staticFile(GLB_URL));
+  const real = glb !== null && glb !== "missing";
   const T = frame / fps;
   const idx = cues.findIndex((c) => frame >= c.from && frame < c.from + c.frames);
   const cue = cues[idx];
@@ -247,10 +354,12 @@ export const AvatarOverlay: React.FC<{ cues: AvatarCue[] }> = ({ cues }) => {
   const open = series.open[frame] ?? 0;
   const talk = series.talk[frame] ?? 0;
   const blink = blinkAmount(T);
-  const s = Math.max(0.0001, scale * presence);
-  const [wx, wy] = toWorld(x, y + HEAD_Y * s * PX_PER_UNIT);
+  // the exported avatar is anchored at its head; the primitive figure at the base of its neck
+  const glbScale = lerp(RIG.scale[prevMode === "none" ? (mode === "none" ? "big" : mode) : prevMode], RIG.scale[mode === "none" ? (prevMode === "none" ? "big" : prevMode) : mode], blend);
+  const s = Math.max(0.0001, (real ? glbScale : scale) * presence);
+  const [wx, wy] = toWorld(x, real ? y : y + HEAD_Y * s * PX_PER_UNIT);
   const floorShow = Math.min(1, presence) * (mode === "big" ? 1 : prevMode === "big" ? 1 - blend : 0);
-  if (!cue || presence <= 0) return null;
+  if (!cue || presence <= 0 || glb === null) return null;
   // the bottom of the figure dissolves into the frame edge through a mask, so nothing is painted over the scene
   const mask = `linear-gradient(to bottom, black ${height - fadeH}px, rgba(0,0,0,0.1) ${height - fadeH * 0.45}px, transparent ${height - fadeH * 0.22}px)`;
   return (
@@ -262,7 +371,7 @@ export const AvatarOverlay: React.FC<{ cues: AvatarCue[] }> = ({ cues }) => {
         <directionalLight position={[-2, 0, 3]} intensity={0.35} />
         <Floor show={floorShow} />
         <group position={[wx, wy, 0]} scale={[s, s, s]}>
-          <Figure open={open} blink={blink} talk={talk} T={T} yaw={yaw} gesture={gesture} />
+          {real ? <GlbFigure gltf={glb} open={open} blink={blink} talk={talk} T={T} yaw={yaw} gesture={gesture} /> : <Figure open={open} blink={blink} talk={talk} T={T} yaw={yaw} gesture={gesture} />}
         </group>
       </ThreeCanvas>
     </AbsoluteFill>
